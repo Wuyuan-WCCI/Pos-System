@@ -10,6 +10,9 @@ import OrderList from './components/OrderList';
 import { CustomerProvider } from './context/CustomerContext';
 import { ProductProvider } from './context/ProductContext';
 import { OrderProvider } from './context/OrderContext';
+import PaymentPage from './components/PaymentPage';
+import { OrderItemProvider } from './context/OrderItemContext';
+
 
 const App = () => {
     return (
@@ -25,6 +28,7 @@ const App = () => {
                             <Route path="/products/new" element={<ProductForm />} />
                             <Route path="/orders" element={<OrderList />} />
                             <Route path="/orders/new" element={<OrderForm />} />
+                            <Route path="/payment" element={<PaymentPage />} />
                         </Routes>
                     </OrderProvider>
                 </ProductProvider>

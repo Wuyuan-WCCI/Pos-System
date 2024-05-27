@@ -1,90 +1,100 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { CustomerContext } from '../context/CustomerContext';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
-import { OrderContext } from '../context/OrderContext';
 
 const OrderForm = () => {
-    const [selectedCustomer, setSelectedCustomer] = useState('');
-    const [selectedProduct, setSelectedProduct] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [error, setError] = useState('');
-    const [feedbackMsg, setFeedbackMsg] = useState('');
-    const { customers, fetchCustomers } = useContext(CustomerContext);
+    const [orderItems, setOrderItems] = useState([]);
+    const [totalPrice, setTotalPrice] = useState(0);
     const { products, fetchProducts } = useContext(ProductContext);
-    const { addOrder } = useContext(OrderContext);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetchCustomers();
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!selectedCustomer || !selectedProduct || !quantity.trim()) {
-            setError('Please select a customer, product, and enter quantity.');
-            return;
+    const handleQuantityChange = (productId, quantity) => {
+        const updatedItems = [...orderItems];
+        const index = updatedItems.findIndex(item => item.productId === productId);
+        if (index !== -1) {
+            updatedItems[index].quantity = quantity;
+        } else {
+            const product = products.find(p => p.id === productId);
+            updatedItems.push({ 
+                productId, 
+                quantity, 
+                productName: product.name, 
+                productPrice: product.price 
+            });
         }
+        setOrderItems(updatedItems);
+        calculateTotalPrice(updatedItems);
+    };
 
-        const orderItems = [{
-            product: products.find(product => product.id === parseInt(selectedProduct)),
-            quantity: parseInt(quantity.trim(), 10)
-        }];
-
-        const order = {
-            customer: customers.find(customer => customer.id === selectedCustomer),
-            orderItems,
-            orderDate: new Date(),
-            status: 'Pending',
-            totalAmount: orderItems.reduce((total, item) => total + item.product.price * item.quantity, 0)
-        };
-
-        try {
-            await addOrder(order);
-            setFeedbackMsg('Order created successfully.');
-            setSelectedCustomer('');
-            setSelectedProduct('');
-            setQuantity('');
-        } catch (error) {
-            console.error('Error creating order:', error);
-            setError('Failed to create order. Please try again later.');
+    const calculateTotalPrice = (items) => {
+        let total = 0;
+        for (const item of items) {
+            const product = products.find(p => p.id === item.productId);
+            if (product) {
+                total += product.price * item.quantity;
+            }
         }
+        setTotalPrice(total);
+    };
+
+    const handleAddToOrder = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            const existingItem = orderItems.find(item => item.productId === productId);
+            if (existingItem) {
+                handleQuantityChange(productId, existingItem.quantity + 1);
+            } else {
+                const updatedItems = [...orderItems, { 
+                    productId, 
+                    quantity: 1, 
+                    productName: product.name, 
+                    productPrice: product.price 
+                }];
+                setOrderItems(updatedItems);
+                calculateTotalPrice(updatedItems);
+            }
+        }
+    };
+
+    const handleCheckout = () => {
+        navigate('/payment', { state: { orderItems, totalPrice } });
     };
 
     return (
         <div>
             <h2>Create Order</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {feedbackMsg && <p style={{ color: 'green' }}>{feedbackMsg}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Select Customer:</label>
-                    <select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)}>
-                        <option value="">-- Select Customer --</option>
-                        {customers.map(customer => (
-                            <option key={customer.id} value={customer.id}>{customer.name}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label>Select Product:</label>
-                    <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}>
-                        <option value="">-- Select Product --</option>
-                        {products.map(product => (
-                            <option key={product.id} value={product.id}>{product.name} - ${product.price.toFixed(2)}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label>Quantity:</label>
-                    <input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        placeholder="Enter quantity"
-                    />
-                </div>
-                <button type="submit">Create Order</button>
-            </form>
+            <div>
+                <h3>Products</h3>
+                <ul>
+                    {products.map(product => (
+                        <li key={product.id}>
+                            <span>{product.name} - ${product.price.toFixed(2)}</span>
+                            <input
+                                type="number"
+                                value={orderItems.find(item => item.productId === product.id)?.quantity || ''}
+                                onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
+                            />
+                            <button onClick={() => handleAddToOrder(product.id)}>Add</button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div>
+                <h3>Order Summary</h3>
+                <ul>
+                    {orderItems.map(item => (
+                        <li key={item.productId}>
+                            {products.find(p => p.id === item.productId)?.name}: {item.quantity}
+                        </li>
+                    ))}
+                </ul>
+                <p>Total Price: ${totalPrice.toFixed(2)}</p>
+                <button onClick={handleCheckout}>Checkout</button>
+            </div>
         </div>
     );
 };

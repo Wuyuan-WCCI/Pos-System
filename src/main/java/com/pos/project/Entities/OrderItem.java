@@ -3,6 +3,8 @@ package com.pos.project.Entities;
 import jakarta.persistence.*;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class OrderItem {
 
@@ -10,7 +12,9 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id")
     private Order order;
 
     @ManyToOne
@@ -22,90 +26,65 @@ public class OrderItem {
     public OrderItem() {
     }
 
-    public OrderItem(Long id, Order order, Product product, int quantity, double price) {
+    public OrderItem(Long id, Product product, int quantity, double price) {
         this.id = id;
-        this.order = order;
         this.product = product;
         this.quantity = quantity;
         this.price = price;
     }
 
+    // Getters and setters...
+
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public OrderItem id(Long id) {
-        setId(id);
-        return this;
-    }
-
     public Order getOrder() {
-        return this.order;
+        return order;
     }
 
     public void setOrder(Order order) {
         this.order = order;
     }
 
-    public OrderItem order(Order order) {
-        setOrder(order);
-        return this;
-    }
-
     public Product getProduct() {
-        return this.product;
+        return product;
     }
 
     public void setProduct(Product product) {
         this.product = product;
     }
 
-    public OrderItem product(Product product) {
-        setProduct(product);
-        return this;
-    }
-
     public int getQuantity() {
-        return this.quantity;
+        return quantity;
     }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
-    public OrderItem quantity(int quantity) {
-        setQuantity(quantity);
-        return this;
-    }
-
     public double getPrice() {
-        return this.price;
+        return price;
     }
 
     public void setPrice(double price) {
         this.price = price;
     }
 
-    public OrderItem price(double price) {
-        setPrice(price);
-        return this;
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (o == this)
+        if (this == o)
             return true;
-        if (!(o instanceof OrderItem)) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
         OrderItem orderItem = (OrderItem) o;
-        return Objects.equals(id, orderItem.id) && Objects.equals(order, orderItem.order)
-                && Objects.equals(product, orderItem.product) && quantity == orderItem.quantity
-                && price == orderItem.price;
+        return quantity == orderItem.quantity && Double.compare(orderItem.price, price) == 0
+                && Objects.equals(id, orderItem.id) && Objects.equals(order, orderItem.order)
+                && Objects.equals(product, orderItem.product);
     }
 
     @Override
@@ -115,13 +94,21 @@ public class OrderItem {
 
     @Override
     public String toString() {
-        return "{" +
-                " id='" + getId() + "'" +
-                ", order='" + getOrder() + "'" +
-                ", product='" + getProduct() + "'" +
-                ", quantity='" + getQuantity() + "'" +
-                ", price='" + getPrice() + "'" +
-                "}";
+        return "OrderItem{" +
+                "id=" + id +
+                ", order=" + order +
+                ", product=" + product +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                '}';
     }
 
+    public String basicToString() {
+        return "OrderItem{" +
+                "id=" + id +
+                ", product=" + product +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                '}';
+    }
 }

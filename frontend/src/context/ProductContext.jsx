@@ -26,7 +26,7 @@ export const ProductProvider = ({ children }) => {
         }
     };
 
-    ProductProvider.PropTypes = {
+    ProductProvider.propTypes = {
             children: PropTypes.node.isRequired
     }
 

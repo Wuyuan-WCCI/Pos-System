@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
@@ -15,24 +15,33 @@ export const OrderProvider = ({ children }) => {
             console.error('Error fetching orders:', error);
         }
     };
-
+    
     const addOrder = async (order) => {
+       
         try {
             const response = await axios.post('http://localhost:8080/api/orders', order);
             setOrders([...orders, response.data]);
+            
         } catch (error) {
             console.error('Error adding order:', error);
             throw error;
         }
-    };
 
-    OrderProvider.PropTypes = {
+        
+    };
+    
+
+
+    OrderProvider.propTypes = {
         children: PropTypes.node.isRequired
     }
 
-    return (
-        <OrderContext.Provider value={{ orders, fetchOrders, addOrder }}>
-            {children}
-        </OrderContext.Provider>
-    );
+    const value = {
+        orders,
+        fetchOrders,
+        addOrder,
+      };
+
+      return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;
+    
 };

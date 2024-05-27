@@ -6,7 +6,7 @@ const OrderList = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [fetchOrders]);
 
     return (
         <div>
@@ -14,7 +14,7 @@ const OrderList = () => {
             <ul>
                 {orders.map(order => (
                     <li key={order.id}>
-                        {order.customer?.name} - {order.orderDate.toString()} - {order.status} - ${order.totalAmount.toFixed(2)}
+                        {order.customer?.name} - {order.orderDate} - {order.status} - ${order.totalAmount} -{order.paymentMethod}
                     </li>
                 ))}
             </ul>

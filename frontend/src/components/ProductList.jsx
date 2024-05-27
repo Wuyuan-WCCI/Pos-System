@@ -6,7 +6,7 @@ const ProductList = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
     return (
         <div>
