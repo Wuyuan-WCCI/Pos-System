@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 
@@ -13,49 +13,27 @@ const OrderForm = () => {
     }, [fetchProducts]);
 
     const handleQuantityChange = (productId, quantity) => {
-        const updatedItems = [...orderItems];
-        const index = updatedItems.findIndex(item => item.productId === productId);
-        if (index !== -1) {
-            updatedItems[index].quantity = quantity;
-        } else {
-            const product = products.find(p => p.id === productId);
-            updatedItems.push({ 
-                productId, 
-                quantity, 
-                productName: product.name, 
-                productPrice: product.price 
-            });
-        }
+        const updatedItems = orderItems.map(item =>
+            item.product.id === productId ? { ...item, quantity } : item
+        );
         setOrderItems(updatedItems);
         calculateTotalPrice(updatedItems);
     };
 
     const calculateTotalPrice = (items) => {
-        let total = 0;
-        for (const item of items) {
-            const product = products.find(p => p.id === item.productId);
-            if (product) {
-                total += product.price * item.quantity;
-            }
-        }
+        const total = items.reduce((acc, item) => acc + item.quantity * item.product.price, 0);
         setTotalPrice(total);
     };
 
     const handleAddToOrder = (productId) => {
         const product = products.find(p => p.id === productId);
         if (product) {
-            const existingItem = orderItems.find(item => item.productId === productId);
+            const existingItem = orderItems.find(item => item.product.id === productId);
             if (existingItem) {
                 handleQuantityChange(productId, existingItem.quantity + 1);
             } else {
-                const updatedItems = [...orderItems, { 
-                    productId, 
-                    quantity: 1, 
-                    productName: product.name, 
-                    productPrice: product.price 
-                }];
-                setOrderItems(updatedItems);
-                calculateTotalPrice(updatedItems);
+                setOrderItems([...orderItems, { product, quantity: 1 }]);
+                calculateTotalPrice([...orderItems, { product, quantity: 1 }]);
             }
         }
     };
@@ -75,7 +53,7 @@ const OrderForm = () => {
                             <span>{product.name} - ${product.price.toFixed(2)}</span>
                             <input
                                 type="number"
-                                value={orderItems.find(item => item.productId === product.id)?.quantity || ''}
+                                value={orderItems.find(item => item.product.id === product.id)?.quantity || ''}
                                 onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
                             />
                             <button onClick={() => handleAddToOrder(product.id)}>Add</button>
@@ -87,8 +65,8 @@ const OrderForm = () => {
                 <h3>Order Summary</h3>
                 <ul>
                     {orderItems.map(item => (
-                        <li key={item.productId}>
-                            {products.find(p => p.id === item.productId)?.name}: {item.quantity}
+                        <li key={item.product.id}>
+                            {item.product.name}: {item.quantity}
                         </li>
                     ))}
                 </ul>

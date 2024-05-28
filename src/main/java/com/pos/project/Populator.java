@@ -42,9 +42,18 @@ public class Populator implements CommandLineRunner {
         Product product2 = new Product(null, "Cake", "6 packed", 3.99, 6);
         productRepo.save(product2);
 
+        Product product3 = new Product(3l, "Coffee", "12.5 oz", 2.50, 10);
+        productRepo.save(product3);
+
+        Product product4 = new Product(4l, "Croissant", "Freshly baked", 1.99, 20);
+        productRepo.save(product4);
+
         // Create and save a customer
         Customer customer1 = new Customer(null, "lin", "", "", "");
         customerRepo.save(customer1);
+
+        Customer customer2 = new Customer(5l, "Alice", "alice@example.com", "123456789", "123 Main Street");
+        customerRepo.save(customer2);
 
         // Create an order
         Date orderDate = new Date();

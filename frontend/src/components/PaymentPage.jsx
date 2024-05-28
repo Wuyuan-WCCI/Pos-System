@@ -9,24 +9,18 @@ const PaymentPage = () => {
     const { orderItems, totalPrice } = location.state || { orderItems: [], totalPrice: 0 };
     const { addOrder } = useContext(OrderContext);
 
-    console.log(location.state);
-    console.log(orderItems);
-
     const handlePayment = async () => {
         const order = {
             orderItems,
-            totalAmount: totalPrice.toFixed(2),
+            totalAmount: totalPrice,
             paymentMethod,
-            status: 'Completed', // or any other status you want to set
-            orderDate: new Date(),
-            // Add other fields as needed
+            status: 'Completed',
+            orderDate: new Date().toISOString(),
         };
-        console.log(order);
+
         try {
             await addOrder(order);
-            // Redirect to new order page after payment
             navigate('/orders/new');
-            
         } catch (error) {
             console.error('Error completing the order:', error);
             // Handle error appropriately
@@ -41,8 +35,8 @@ const PaymentPage = () => {
                 <h3>Order Summary</h3>
                 <ul>
                     {orderItems.map(item => (
-                        <li key={item.productId}>
-                            {item.productName}: {item.quantity} x ${item.productPrice.toFixed(2)} = ${(item.quantity * item.productPrice).toFixed(2)}
+                        <li key={item.product.id}>
+                            {item.product.name}: {item.quantity} x ${item.product.price.toFixed(2)} = ${(item.quantity * item.product.price).toFixed(2)}
                         </li>
                     ))}
                 </ul>
@@ -52,8 +46,8 @@ const PaymentPage = () => {
                 <label>
                     <input
                         type="radio"
-                        value="cash"
-                        checked={paymentMethod === 'cash'}
+                        value="Cash"
+                        checked={paymentMethod === 'Cash'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                     />
                     Cash
@@ -61,8 +55,8 @@ const PaymentPage = () => {
                 <label>
                     <input
                         type="radio"
-                        value="creditCard"
-                        checked={paymentMethod === 'creditCard'}
+                        value="Credit Card"
+                        checked={paymentMethod === 'Credit Card'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                     />
                     Credit Card
@@ -70,8 +64,8 @@ const PaymentPage = () => {
                 <label>
                     <input
                         type="radio"
-                        value="paypal"
-                        checked={paymentMethod === 'paypal'}
+                        value="PayPal"
+                        checked={paymentMethod === 'PayPal'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                     />
                     PayPal
