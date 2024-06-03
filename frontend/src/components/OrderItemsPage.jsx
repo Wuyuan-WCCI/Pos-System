@@ -19,16 +19,22 @@ const OrderItemsPage = () => {
         fetchOrderItems();
     }, [orderId]);
 
+    // Calculate the total cost of the order items
+    const totalCost = orderItems.reduce((total, item) => {
+        return total + (item.product.price * item.quantity);
+    }, 0);
+
     return (
         <div>
             <h2>Order Items</h2>
             <ul>
                 {orderItems.map(item => (
                     <li key={item.id}>
-                        {item.product.name} - Quantity: {item.quantity} - Price: ${item.price}
+                        {item.product.name} ------ ${item.product.price} x {item.quantity} = ${(item.quantity * item.product.price).toFixed(2)}
                     </li>
                 ))}
             </ul>
+            <h3>Total: ${totalCost.toFixed(2)}</h3>
         </div>
     );
 };

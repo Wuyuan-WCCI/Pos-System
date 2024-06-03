@@ -13,6 +13,7 @@ import { OrderProvider } from './context/OrderContext';
 import PaymentPage from './components/PaymentPage';
 import { OrderItemProvider } from './context/OrderItemContext';
 import OrderItemsPage from './components/OrderItemsPage';
+import SalesHistoryPage from './components/SalesHistoryPage';
 
 
 const App = () => {
@@ -31,6 +32,7 @@ const App = () => {
                             <Route path="/orders/new" element={<OrderForm />} />
                             <Route path="/payment" element={<PaymentPage />} />
                             <Route path='/orders/:orderId/items' element = {<OrderItemsPage/>}/>
+                            <Route path="/sales-history" element={<SalesHistoryPage />} />
                         </Routes>
                     </OrderProvider>
                 </ProductProvider>
