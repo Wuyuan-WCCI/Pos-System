@@ -14,6 +14,7 @@ import PaymentPage from './components/PaymentPage';
 import { OrderItemProvider } from './context/OrderItemContext';
 import OrderItemsPage from './components/OrderItemsPage';
 import SalesHistoryPage from './components/SalesHistoryPage';
+import GiftCardManagement from './components/GiftCardManagement';
 
 
 const App = () => {
@@ -33,6 +34,7 @@ const App = () => {
                             <Route path="/payment" element={<PaymentPage />} />
                             <Route path='/orders/:orderId/items' element = {<OrderItemsPage/>}/>
                             <Route path="/sales-history" element={<SalesHistoryPage />} />
+                            <Route path="/giftcards" element={<GiftCardManagement />} />
                         </Routes>
                     </OrderProvider>
                 </ProductProvider>

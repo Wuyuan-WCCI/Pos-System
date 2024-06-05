@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyController {
 
     @CrossOrigin(origins = "http://192.168.137.1:5173") // Replace with your frontend's URL
-    @GetMapping("/api/some-endpoint")
+    @GetMapping("/api/**")
     public String someEndpoint() {
         return "Response";
     }

@@ -1,5 +1,6 @@
 package com.pos.project;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,10 +10,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import com.pos.project.Entities.Customer;
+import com.pos.project.Entities.GiftCard;
 import com.pos.project.Entities.Order;
 import com.pos.project.Entities.OrderItem;
 import com.pos.project.Entities.Product;
 import com.pos.project.Repository.CustomerRepository;
+import com.pos.project.Repository.GiftCardRepository;
 import com.pos.project.Repository.OrderRepository;
 import com.pos.project.Repository.ProductRepository;
 import com.pos.project.Repository.OrderItemRepository;
@@ -31,6 +34,9 @@ public class Populator implements CommandLineRunner {
 
     @Autowired
     private OrderItemRepository orderItemRepo;
+
+    @Autowired
+    private GiftCardRepository giftCardRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -77,6 +83,9 @@ public class Populator implements CommandLineRunner {
         orderItems.add(orderItem2);
         newOrder.setOrderItems(orderItems);
         orderRepo.save(newOrder);
+
+        GiftCard giftCard = new GiftCard(1L, "123456", new BigDecimal(100.00), true);
+        giftCardRepository.save(giftCard);
 
         System.out.println(newOrder.getOrderItems());
     }
