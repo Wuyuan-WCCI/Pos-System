@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const SalesHistoryPage = () => {
     const [salesHistory, setSalesHistory] = useState([]);
@@ -23,12 +24,12 @@ const SalesHistoryPage = () => {
 
     const calculateTotalByPaymentMethod = () => {
         return salesHistory.reduce((acc, order) => {
-            const paymentMethod = order.paymentMethod;
-            const amount = order.totalAmount;
-            if (!acc[paymentMethod]) {
-                acc[paymentMethod] = 0;
+            for (const [method, amount] of Object.entries(order.paymentMethods)) {
+                if (!acc[method]) {
+                    acc[method] = 0;
+                }
+                acc[method] += amount;
             }
-            acc[paymentMethod] += amount;
             return acc;
         }, {});
     };
@@ -40,7 +41,11 @@ const SalesHistoryPage = () => {
             <h2>Sales History</h2>
             <label>
                 Date:
-                <input type="date" value={format(date, 'yyyy-MM-dd')} onChange={(e) => setDate(new Date(e.target.value))} />
+                <input
+                    type="date"
+                    value={format(date, 'yyyy-MM-dd')}
+                    onChange={(e) => setDate(new Date(e.target.value))}
+                />
             </label>
             <label>
                 Period:
@@ -53,8 +58,19 @@ const SalesHistoryPage = () => {
             </label>
             <ul>
                 {salesHistory.map(order => (
+                    
                     <li key={order.id}>
-                        {order.customer?.name} - {new Date(order.orderDate).toLocaleString()} - {order.status} - ${order.totalAmount.toFixed(2)} - {order.paymentMethod}
+                    <Link to={`/orders/${order.id}/items`}>
+                    {order.id} -- {order.customer ? order.customer.name : ' Guest'} - {new Date(order.orderDate).toLocaleString()} - {order.status} - ${order.totalAmount.toFixed(2)}
+                        </Link>
+                        <ul>
+                            {Object.entries(order.paymentMethods).map(([method, amount]) => (
+                                <li key={method}>
+                                    {method}: ${amount.toFixed(2)}
+                                </li>
+                            ))}
+                        </ul>
+                        
                     </li>
                 ))}
             </ul>

@@ -17,7 +17,7 @@ const PaymentPage = () => {
     const handleGiftCardCheck = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/api/giftcards/${giftCardCode}`);
-            setGiftCardBalance(response.data.balance);
+            setGiftCardBalance(parseFloat(response.data.balance).toFixed(2));
         } catch (error) {
             console.error('Error checking gift card', error);
         }
@@ -25,12 +25,14 @@ const PaymentPage = () => {
 
     const handlePayment = async () => {
         let remainingAmount = totalPrice;
+        let paymentMethods = {};
+
         if (paymentMethod === 'Gift Card') {
             if (giftCardBalance >= totalPrice) {
                 remainingAmount = 0;
                 await axios.put('http://localhost:8080/api/giftcards', {
                     code: giftCardCode,
-                    balance: giftCardBalance - totalPrice,
+                    balance: (giftCardBalance - totalPrice).toFixed(2),
                     isActive: true,
                 });
             } else {
@@ -46,12 +48,17 @@ const PaymentPage = () => {
                     return;
                 }
             }
+            paymentMethods['Gift Card'] = totalPrice;
+        }
+
+        if (remainingAmount > 0) {
+            paymentMethods[paymentMethod] = remainingAmount;
         }
 
         const order = {
             orderItems,
             totalAmount: totalPrice.toFixed(2),
-            paymentMethod: remainingAmount === 0 ? 'Gift Card' : `${paymentMethod} & ${additionalPaymentMethod}`,
+            paymentMethods: paymentMethods,
             status: 'Completed',
             orderDate: new Date().toISOString(),
         };
@@ -117,7 +124,7 @@ const PaymentPage = () => {
                             onChange={(e) => setGiftCardCode(e.target.value)}
                         />
                         <button onClick={handleGiftCardCheck}>Check Gift Card Balance</button>
-                        <p>Gift Card Balance: ${giftCardBalance.toFixed(2)}</p>
+                        <p>Gift Card Balance: ${parseFloat(giftCardBalance).toFixed(2)}</p>
                     </div>
                 )}
                 {remainingAmount > 0 && (

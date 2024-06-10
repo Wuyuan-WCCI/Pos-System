@@ -1,9 +1,14 @@
 package com.pos.project.Entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -17,6 +22,9 @@ public class Customer {
     private String email;
     private String phone;
     private String address;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
 
     public Customer() {
     }
@@ -92,6 +100,24 @@ public class Customer {
     public Customer address(String address) {
         setAddress(address);
         return this;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
+
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setCustomer(this);
+    }
+
+    public void removeOrder(Order order) {
+        orders.remove(order);
+        order.setCustomer(null);
     }
 
     @Override

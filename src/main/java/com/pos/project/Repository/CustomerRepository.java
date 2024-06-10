@@ -8,4 +8,6 @@ import com.pos.project.Entities.Customer;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByName(String name);
+
+    Optional<Customer> findByPhone(String phone);
 }

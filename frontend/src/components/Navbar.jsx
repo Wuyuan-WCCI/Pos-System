@@ -11,6 +11,8 @@ const Navbar = () => {
                 <li><Link to="/orders">Orders</Link></li>
                 <li><Link to="/sales-history">Sales History</Link></li>
                 <li><Link to="/giftcards">Gift Card</Link></li>
+                <li><Link to="/orders/new">New Order</Link></li>
+
 
             </ul>
         </nav>
