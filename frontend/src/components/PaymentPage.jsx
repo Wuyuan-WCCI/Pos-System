@@ -27,6 +27,11 @@ const PaymentPage = () => {
         let remainingAmount = totalPrice;
         let paymentMethods = {};
 
+        if (!paymentMethod) {
+            alert('Please choose a payment method.');
+            return;
+        }
+
         if (paymentMethod === 'Gift Card') {
             if (giftCardBalance >= totalPrice) {
                 remainingAmount = 0;
@@ -49,12 +54,18 @@ const PaymentPage = () => {
                     alert(`Insufficient gift card balance. Please choose an additional payment method to cover the remaining amount of $${remainingAmount.toFixed(2)}.`);
                     return;
                 }
+
+                if (remainingAmount > 0) {
+                    paymentMethods[additionalPaymentMethod] = remainingAmount;
+                }
             }
         }
+        
 
-        if (remainingAmount > 0) {
-            paymentMethods[additionalPaymentMethod] = remainingAmount;
+        if (paymentMethod === 'Cash' || paymentMethod === 'PayPal' || paymentMethod === 'Credit Card') {
+            paymentMethods[paymentMethod] = totalPrice;
         }
+
 
         const order = {
             orderItems,
