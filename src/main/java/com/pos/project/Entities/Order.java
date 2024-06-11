@@ -7,7 +7,7 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "orders")
@@ -17,9 +17,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "customer_id")
+    @JsonBackReference
     private Customer customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -143,7 +143,7 @@ public class Order {
     public String toString() {
         return "Order{" +
                 "id=" + id +
-                ", customer=" + customer +
+                ", customer=" + customer.getName() +
                 ", orderItems=" + orderItems.stream()
                         .map(OrderItem::basicToString)
                         .collect(Collectors.toList())

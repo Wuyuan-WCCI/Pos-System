@@ -42,20 +42,12 @@ const CustomerDetails = () => {
                     <ul>
                         {customer.orders.map(order => (
                             <li key={order.id}>
-                            <Link to={`/orders/${order.id}`}>
-                                <p>Order ID: {order.id}</p>
-                                <p>Total Amount: ${order.totalAmount}</p>
-                                <p>Status: {order.status}</p>
-                                <p>Payment Method: {Object.entries(order.paymentMethods).map(([method, amount]) => (
-                                <li key={method}>
-                                    {method}: ${amount.toFixed(2)}
-                                </li>
-                            ))}</p>
-                                <p>Order Date: {new Date(order.orderDate).toLocaleString()}</p>
-                                </Link>
-                                <ul>
-                            
-                        </ul>
+                                <Link to={`/orders/${order.id}`}>
+                                    Order ID: {order.id}<br />
+                                    Total Amount: ${order.totalAmount}<br />
+                                    Status: {order.status}<br />
+                                    Order Date: {new Date(order.orderDate).toLocaleString()}<br />
+                                </Link><br />
                             </li>
                         ))}
                     </ul>

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 public class Customer {
@@ -28,6 +29,7 @@ public class Customer {
     private String address;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Order> orders = new ArrayList<>();
 
     public Customer() {
