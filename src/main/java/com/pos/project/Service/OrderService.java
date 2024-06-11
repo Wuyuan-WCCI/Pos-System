@@ -2,6 +2,7 @@ package com.pos.project.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pos.project.Entities.Customer;
 import com.pos.project.Entities.Order;
@@ -34,6 +35,7 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
+    @Transactional
     public Order createOrder(Order order) {
         // Validate and process order items and other details...
 

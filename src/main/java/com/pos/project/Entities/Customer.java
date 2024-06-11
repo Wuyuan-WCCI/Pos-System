@@ -20,7 +20,7 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long customerId;
+    private Long id;
 
     private String name;
     private String email;
@@ -33,8 +33,8 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(Long customerId, String name, String email, String phone, String address) {
-        this.customerId = customerId;
+    public Customer(Long id, String name, String email, String phone, String address) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -42,15 +42,15 @@ public class Customer {
     }
 
     public Long getId() {
-        return this.customerId;
+        return this.id;
     }
 
-    public void setId(Long customerId) {
-        this.customerId = customerId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Customer id(Long customerId) {
-        setId(customerId);
+    public Customer id(Long id) {
+        setId(id);
         return this;
     }
 
@@ -132,14 +132,14 @@ public class Customer {
             return false;
         }
         Customer customer = (Customer) o;
-        return Objects.equals(customerId, customer.customerId) && Objects.equals(name, customer.name)
+        return Objects.equals(id, customer.id) && Objects.equals(name, customer.name)
                 && Objects.equals(email, customer.email) && Objects.equals(phone, customer.phone)
                 && Objects.equals(address, customer.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(customerId, name, email, phone, address);
+        return Objects.hash(id, name, email, phone, address);
     }
 
     @Override
