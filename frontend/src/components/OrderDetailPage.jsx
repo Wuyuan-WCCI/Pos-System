@@ -45,7 +45,7 @@ const OrderDetailPage = () => {
                             <li key={item.id}>
                                 <p>Product: {item.product.name}</p>
                                 <p>Quantity: {item.quantity}</p>
-                                <p>Price: ${item.price}</p>
+                                <p>Price: ${item.product.price}</p>
                                 {/* Render other item details as needed */}
                             </li>
                         ))}
