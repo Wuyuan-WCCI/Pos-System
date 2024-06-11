@@ -14,6 +14,8 @@ public class Product {
     private Long id;
 
     private String name;
+    private String brand;
+
     private String description;
     private double price;
     private int quantityInStock;
@@ -21,9 +23,10 @@ public class Product {
     public Product() {
     }
 
-    public Product(Long id, String name, String description, double price, int quantityInStock) {
+    public Product(Long id, String name, String brand, String description, double price, int quantityInStock) {
         this.id = id;
         this.name = name;
+        this.brand = brand;
         this.description = description;
         this.price = price;
         this.quantityInStock = quantityInStock;
@@ -40,6 +43,14 @@ public class Product {
     public Product id(Long id) {
         setId(id);
         return this;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
     public String getName() {
@@ -103,13 +114,14 @@ public class Product {
         }
         Product product = (Product) o;
         return Objects.equals(id, product.id) && Objects.equals(name, product.name)
+                && Objects.equals(brand, product.brand)
                 && Objects.equals(description, product.description) && price == product.price
                 && quantityInStock == product.quantityInStock;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, price, quantityInStock);
+        return Objects.hash(id, name, brand, description, price, quantityInStock);
     }
 
     @Override
@@ -120,7 +132,7 @@ public class Product {
                 ", description='" + getDescription() + "'" +
                 ", price='" + getPrice() + "'" +
                 ", quantityInStock='" + getQuantityInStock() + "'" +
-                "}";
+                "brand='" + getBrand() + "}";
     }
 
 }
