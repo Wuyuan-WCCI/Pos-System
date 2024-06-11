@@ -9,9 +9,10 @@ const PaymentPage = () => {
     const [giftCardBalance, setGiftCardBalance] = useState(0);
     const [additionalPaymentMethod, setAdditionalPaymentMethod] = useState('');
     const [remainingAmount, setRemainingAmount] = useState(0);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
-    const { orderItems, totalPrice } = location.state || { orderItems: [], totalPrice: 0 };
+    const { orderItems, totalPrice, customerInfo } = location.state || { orderItems: [], totalPrice: 0, customerInfo: {} };
     const { addOrder } = useContext(OrderContext);
 
     const handleGiftCardCheck = async () => {
@@ -20,6 +21,7 @@ const PaymentPage = () => {
             setGiftCardBalance(response.data.balance);
         } catch (error) {
             console.error('Error checking gift card', error);
+            setError('Error checking gift card balance.');
         }
     };
 
@@ -59,15 +61,12 @@ const PaymentPage = () => {
                     paymentMethods[additionalPaymentMethod] = remainingAmount;
                 }
             }
-        }
-        
-
-        if (paymentMethod === 'Cash' || paymentMethod === 'PayPal' || paymentMethod === 'Credit Card') {
+        } else {
             paymentMethods[paymentMethod] = totalPrice;
         }
 
-
         const order = {
+            customer: customerInfo,
             orderItems,
             totalAmount: totalPrice.toFixed(2),
             paymentMethods: paymentMethods,
@@ -80,13 +79,14 @@ const PaymentPage = () => {
             navigate('/orders/new');
         } catch (error) {
             console.error('Error completing the order:', error);
-            // Handle error appropriately
+            setError('Error completing the order.');
         }
     };
 
     return (
         <div>
             <h2>Payment</h2>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             <p>Total Price: ${totalPrice.toFixed(2)}</p>
             <div>
                 <h3>Order Summary</h3>
@@ -97,6 +97,13 @@ const PaymentPage = () => {
                         </li>
                     ))}
                 </ul>
+            </div>
+            <div>
+                <h3>Customer Information</h3>
+                <p>Name: {customerInfo.name}</p>
+                <p>Email: {customerInfo.email}</p>
+                <p>Phone: {customerInfo.phone}</p>
+                <p>Address: {customerInfo.address}</p>
             </div>
             <div>
                 <h3>Choose Payment Method</h3>

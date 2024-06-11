@@ -2,35 +2,39 @@ package com.pos.project.Entities;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 
 @Entity
 public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long customerId;
 
     private String name;
     private String email;
     private String phone;
     private String address;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
     public Customer() {
     }
 
-    public Customer(Long id, String name, String email, String phone, String address) {
-        this.id = id;
+    public Customer(Long customerId, String name, String email, String phone, String address) {
+        this.customerId = customerId;
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -38,15 +42,15 @@ public class Customer {
     }
 
     public Long getId() {
-        return this.id;
+        return this.customerId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(Long customerId) {
+        this.customerId = customerId;
     }
 
-    public Customer id(Long id) {
-        setId(id);
+    public Customer id(Long customerId) {
+        setId(customerId);
         return this;
     }
 
@@ -128,14 +132,14 @@ public class Customer {
             return false;
         }
         Customer customer = (Customer) o;
-        return Objects.equals(id, customer.id) && Objects.equals(name, customer.name)
+        return Objects.equals(customerId, customer.customerId) && Objects.equals(name, customer.name)
                 && Objects.equals(email, customer.email) && Objects.equals(phone, customer.phone)
                 && Objects.equals(address, customer.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, email, phone, address);
+        return Objects.hash(customerId, name, email, phone, address);
     }
 
     @Override

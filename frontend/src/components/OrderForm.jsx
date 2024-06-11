@@ -51,7 +51,7 @@ const OrderForm = () => {
             });
             const existingCustomer = response.data;
             if (existingCustomer) {
-                setCustomerInfo(existingCustomer);
+                setCustomerInfo(existingCustomer); // Update customerInfo state
             } else {
                 alert('No customer found with this phone number.');
             }
@@ -106,6 +106,27 @@ const OrderForm = () => {
                         onChange={handleCustomerInfoChange}
                     />
                     <button onClick={handleCustomerLookup}>Find Customer</button>
+                </div>
+            )}
+            {!isExistingCustomer && (
+                <div>
+                    <h3>Customer Information</h3>
+                    <label>
+                        Name:
+                        <input type="text" name="name" value={customerInfo.name} onChange={handleCustomerInfoChange} />
+                    </label>
+                    <label>
+                        Email:
+                        <input type="email" name="email" value={customerInfo.email} onChange={handleCustomerInfoChange} />
+                    </label>
+                    <label>
+                        Phone:
+                        <input type="tel" name="phone" value={customerInfo.phone} onChange={handleCustomerInfoChange} />
+                    </label>
+                    <label>
+                        Address:
+                        <input type="text" name="address" value={customerInfo.address} onChange={handleCustomerInfoChange} />
+                    </label>
                 </div>
             )}
             {isExistingCustomer && customerInfo.name && (

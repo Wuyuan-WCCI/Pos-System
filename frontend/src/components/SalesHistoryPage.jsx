@@ -24,7 +24,8 @@ const SalesHistoryPage = () => {
 
     const calculateTotalByPaymentMethod = () => {
         return salesHistory.reduce((acc, order) => {
-            for (const [method, amount] of Object.entries(order.paymentMethods)) {
+            const paymentMethods = order.paymentMethods || {};
+            for (const [method, amount] of Object.entries(paymentMethods)) {
                 if (!acc[method]) {
                     acc[method] = 0;
                 }
@@ -57,33 +58,32 @@ const SalesHistoryPage = () => {
                 </select>
             </label>
             <ul>
-                {salesHistory.map(order => (
-                    
-                    <li key={order.id}>
-                    <Link to={`/orders/${order.id}/items`}>
-                    {order.id} -- {order.customer ? order.customer.name : ' Guest'} - {new Date(order.orderDate).toLocaleString()} - {order.status} - ${order.totalAmount.toFixed(2)}
-                        </Link>
-                        <ul>
-                            {Object.entries(order.paymentMethods).map(([method, amount]) => (
-                                <li key={method}>
-                                    {method}: ${amount.toFixed(2)}
-                                </li>
-                            ))}
-                        </ul>
-                        
-                    </li>
-                ))}
-            </ul>
+            {salesHistory.map(order => (
+    <li key={order.id}>
+        <Link to={`/orders/${order.id}/items`}>
+            {order.id} -- {new Date(order.orderDate).toLocaleString()} - {order.status} - ${(order.totalAmount ?? 0).toFixed(2)}
+        </Link>
+        <ul>
+            {Object.entries(order.paymentMethods || {}).map(([method, amount], index) => (
+                <li key={`${order.id}-${method}-${index}`}>
+                    {method}: ${(amount ?? 0).toFixed(2)}
+                </li>
+            ))}
+        </ul>
+    </li>
+))}
+</ul>
+
             <div>
                 <h3>Total Sales by Payment Method:</h3>
                 <ul>
                     {Object.entries(totalByPaymentMethod).map(([method, total]) => (
                         <li key={method}>
-                            {method}: ${total.toFixed(2)}
+                            {method}: ${(total ?? 0).toFixed(2)}
                         </li>
                     ))}
                 </ul>
-                <h3>Total Sales: ${salesHistory.reduce((total, order) => total + order.totalAmount, 0).toFixed(2)}</h3>
+                <h3>Total Sales: ${(salesHistory.reduce((total, order) => total + (order.totalAmount ?? 0), 0)).toFixed(2)}</h3>
             </div>
         </div>
     );
