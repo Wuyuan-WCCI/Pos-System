@@ -9,7 +9,11 @@ const PaymentPage = () => {
     const [giftCardBalance, setGiftCardBalance] = useState(0);
     const [additionalPaymentMethod, setAdditionalPaymentMethod] = useState('');
     const [remainingAmount, setRemainingAmount] = useState(0);
+    const [cashReceived, setCashReceived] = useState(''); // Initialize as an empty string
     const [error, setError] = useState('');
+    const [showPopup, setShowPopup] = useState(false);
+    const [orderSummary, setOrderSummary] = useState(null); // State to store order summary
+    const [change, setChange] = useState(0); // State to store change amount
     const navigate = useNavigate();
     const location = useLocation();
     const { orderItems, totalPrice, customerInfo } = location.state || { orderItems: [], totalPrice: 0, customerInfo: {} };
@@ -61,6 +65,15 @@ const PaymentPage = () => {
                     paymentMethods[additionalPaymentMethod] = remainingAmount;
                 }
             }
+        } else if (paymentMethod === 'Cash') {
+            const cashAmount = parseFloat(cashReceived);
+            if (isNaN(cashAmount) || cashAmount < totalPrice) {
+                alert(`Insufficient cash provided. Please provide at least $${totalPrice.toFixed(2)}.`);
+                return;
+            } else {
+                setChange(cashAmount - totalPrice);
+                paymentMethods['Cash'] = totalPrice;
+            }
         } else {
             paymentMethods[paymentMethod] = totalPrice;
         }
@@ -75,11 +88,32 @@ const PaymentPage = () => {
         };
 
         try {
-            await addOrder(order);
-            navigate('/orders/new');
+            const newOrder = await addOrder(order);
+            console.log('Order successfully created:', newOrder); // Debugging line
+            setOrderSummary(newOrder); // Store order summary
+            setShowPopup(true); // Show the popup
+            setTimeout(() => {
+                setShowPopup(false);
+                navigate('/orders/new'); // Redirect to new order page after 5 seconds
+            }, 5000);
         } catch (error) {
             console.error('Error completing the order:', error);
             setError('Error completing the order.');
+        }
+    };
+
+    const handleCashReceivedChange = (e) => {
+        const value = e.target.value;
+        setCashReceived(value);
+
+        // Calculate the change if the payment method is cash
+        if (paymentMethod === 'Cash') {
+            const cashAmount = parseFloat(value);
+            if (!isNaN(cashAmount)) {
+                setChange(cashAmount - totalPrice);
+            } else {
+                setChange(0);
+            }
         }
     };
 
@@ -178,6 +212,21 @@ const PaymentPage = () => {
                         </label>
                     </div>
                 )}
+                {paymentMethod === 'Cash' && (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span>$</span>
+                        <input
+                            type="number"
+                            placeholder="Cash Received"
+                            value={cashReceived}
+                            onChange={handleCashReceivedChange}
+                            style={{ marginLeft: '5px' }}
+                        />
+                        {change >= 0 && (
+                            <p>Change: ${change.toFixed(2)}</p>
+                        )}
+                    </div>
+                )}
                 <label>
                     <input
                         type="radio"
@@ -189,6 +238,31 @@ const PaymentPage = () => {
                 </label>
             </div>
             <button onClick={handlePayment}>Complete Payment</button>
+
+            {showPopup && (
+                <div style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+                    zIndex: 1000
+                }}>
+                    <p>Payment Successful!</p>
+                    {orderSummary && (
+                        <div>
+                            <p>Order ID: {orderSummary.id}</p>
+                            <p>Total Amount: ${orderSummary.totalAmount}</p>
+                            <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
+                                <span key={method}>{method}: ${amount.toFixed(2)} </span>
+                            ))}</p>
+                            {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
