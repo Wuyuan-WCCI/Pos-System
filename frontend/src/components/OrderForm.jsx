@@ -10,6 +10,7 @@ const OrderForm = () => {
     const [isExistingCustomer, setIsExistingCustomer] = useState(false);
     const { products, fetchProducts } = useContext(ProductContext);
     const navigate = useNavigate();
+   
 
     useEffect(() => {
         fetchProducts();
@@ -61,8 +62,24 @@ const OrderForm = () => {
         }
     };
 
-    const handleCheckout = () => {
-        navigate('/payment', { state: { orderItems, totalPrice, customerInfo } });
+    const handleCheckout = async () => {
+        const order = {
+            customer: customerInfo,
+            orderItems,
+            totalAmount: totalPrice.toFixed(2),
+            status: 'Pending',
+            orderDate: new Date().toISOString(),
+        };
+        try {
+            const response = await axios.post('http://localhost:8080/api/orders', order);
+            const newOrder = response.data;
+            navigate('/payment', { state: { orderItems, totalPrice, customerInfo , orderId: newOrder.id} });
+            console.log("order created: ", order);
+        } catch(error) {
+            console.error('Error creating order', error)
+            alert('Error Creating order. Please try again.')
+        }
+        
     };
 
     const handleCustomerInfoChange = (e) => {

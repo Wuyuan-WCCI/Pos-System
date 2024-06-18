@@ -68,6 +68,11 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/{id}")
+    public Order modifyOrder(@PathVariable Long id, @RequestBody Order updateOrder) {
+        return this.orderService.updateOrder(id, updateOrder);
+    }
+
     private Map<String, BigDecimal> processPaymentMethods(Map<String, BigDecimal> paymentMethods) {
         // Add logic here if you need to process payment methods before saving
         return paymentMethods;

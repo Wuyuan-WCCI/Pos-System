@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { OrderContext } from '../context/OrderContext';
 import axios from 'axios';
@@ -9,23 +9,35 @@ const PaymentPage = () => {
     const [giftCardBalance, setGiftCardBalance] = useState(0);
     const [additionalPaymentMethod, setAdditionalPaymentMethod] = useState('');
     const [remainingAmount, setRemainingAmount] = useState(0);
-    const [cashReceived, setCashReceived] = useState(''); // Initialize as an empty string
+    const [cashReceived, setCashReceived] = useState('');
     const [error, setError] = useState('');
     const [showPopup, setShowPopup] = useState(false);
-    const [orderSummary, setOrderSummary] = useState(null); // State to store order summary
-    const [change, setChange] = useState(0); // State to store change amount
+    const [orderSummary, setOrderSummary] = useState(null);
+    const [change, setChange] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
-    const { orderItems, totalPrice, customerInfo } = location.state || { orderItems: [], totalPrice: 0, customerInfo: {} };
-    const { addOrder } = useContext(OrderContext);
+    const { orderItems, totalPrice, customerInfo, orderId } = location.state || { orderItems: [], totalPrice: 0, customerInfo: {}, orderId: null };
+
+    const [loading, setLoading] = useState(false); // State to manage loading state
+
+    const { fetchOrder, updateOrder, addOrder } = useContext(OrderContext);
+
+    useEffect(() => {
+        if (orderId) {
+            fetchOrder(orderId); // Fetch order details when component mounts
+        }
+    }, [orderId, fetchOrder]);
 
     const handleGiftCardCheck = async () => {
+        setLoading(true);
         try {
             const response = await axios.get(`http://localhost:8080/api/giftcards/${giftCardCode}`);
             setGiftCardBalance(response.data.balance);
         } catch (error) {
-            console.error('Error checking gift card', error);
+            console.error('Error checking gift card balance:', error);
             setError('Error checking gift card balance.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -38,67 +50,73 @@ const PaymentPage = () => {
             return;
         }
 
-        if (paymentMethod === 'Gift Card') {
-            if (giftCardBalance >= totalPrice) {
-                remainingAmount = 0;
-                paymentMethods['Gift Card'] = totalPrice;
-                await axios.put('http://localhost:8080/api/giftcards', {
-                    code: giftCardCode,
-                    balance: giftCardBalance - totalPrice,
-                    isActive: true,
-                });
-            } else {
-                remainingAmount = totalPrice - giftCardBalance;
-                paymentMethods['Gift Card'] = giftCardBalance;
-                await axios.put('http://localhost:8080/api/giftcards', {
-                    code: giftCardCode,
-                    balance: 0,
-                    isActive: true,
-                });
-                setRemainingAmount(remainingAmount);
-                if (!additionalPaymentMethod) {
-                    alert(`Insufficient gift card balance. Please choose an additional payment method to cover the remaining amount of $${remainingAmount.toFixed(2)}.`);
-                    return;
-                }
-
-                if (remainingAmount > 0) {
-                    paymentMethods[additionalPaymentMethod] = remainingAmount;
-                }
-            }
-        } else if (paymentMethod === 'Cash') {
-            const cashAmount = parseFloat(cashReceived);
-            if (isNaN(cashAmount) || cashAmount < totalPrice) {
-                alert(`Insufficient cash provided. Please provide at least $${totalPrice.toFixed(2)}.`);
-                return;
-            } else {
-                setChange(cashAmount - totalPrice);
-                paymentMethods['Cash'] = totalPrice;
-            }
-        } else {
-            paymentMethods[paymentMethod] = totalPrice;
-        }
-
-        const order = {
-            customer: customerInfo,
-            orderItems,
-            totalAmount: totalPrice.toFixed(2),
-            paymentMethods: paymentMethods,
-            status: 'Completed',
-            orderDate: new Date().toISOString(),
-        };
-
         try {
-            const newOrder = await addOrder(order);
-            console.log('Order successfully created:', newOrder); // Debugging line
-            setOrderSummary(newOrder); // Store order summary
-            setShowPopup(true); // Show the popup
+            if (paymentMethod === 'Gift Card') {
+                if (giftCardBalance >= totalPrice) {
+                    remainingAmount = 0;
+                    paymentMethods['Gift Card'] = totalPrice;
+                    await axios.put(`http://localhost:8080/api/giftcards`, {
+                        code: giftCardCode,
+                        balance: giftCardBalance - totalPrice,
+                        isActive: true,
+                    });
+                } else {
+                    remainingAmount = totalPrice - giftCardBalance;
+                    paymentMethods['Gift Card'] = giftCardBalance;
+                    await axios.put(`http://localhost:8080/api/giftcards`, {
+                        code: giftCardCode,
+                        balance: 0,
+                        isActive: true,
+                    });
+                    setRemainingAmount(remainingAmount);
+                    if (!additionalPaymentMethod) {
+                        alert(`Insufficient gift card balance. Please choose an additional payment method to cover the remaining amount of $${remainingAmount.toFixed(2)}.`);
+                        return;
+                    }
+
+                    if (remainingAmount > 0) {
+                        paymentMethods[additionalPaymentMethod] = remainingAmount;
+                    }
+                }
+            } else if (paymentMethod === 'Cash') {
+                const cashAmount = parseFloat(cashReceived);
+                if (isNaN(cashAmount) || cashAmount < totalPrice) {
+                    alert(`Insufficient cash provided. Please provide at least $${totalPrice.toFixed(2)}.`);
+                    return;
+                } else {
+                    setChange(cashAmount - totalPrice);
+                    paymentMethods['Cash'] = totalPrice;
+                }
+            } else {
+                paymentMethods[paymentMethod] = totalPrice;
+            }
+
+            const orderSummaryData = {
+                customer: customerInfo,
+                orderItems,
+                totalAmount: totalPrice.toFixed(2),
+                paymentMethods: paymentMethods,
+                status: 'Completed',
+                orderDate: new Date().toISOString(),
+            };
+
+            await updateOrder(orderId, {
+                ...orderSummaryData,
+                paymentMethods: paymentMethods,
+                status: 'Completed'
+            });
+
+            setOrderSummary(orderSummaryData);
+            setShowPopup(true);
             setTimeout(() => {
                 setShowPopup(false);
-                navigate('/orders/new'); // Redirect to new order page after 5 seconds
-            }, 5000);
+                navigate('/orders/new');
+            }, 3000);
         } catch (error) {
-            console.error('Error completing the order:', error);
-            setError('Error completing the order.');
+            console.error('Error completing payment:', error);
+            alert('Error completing payment. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -106,7 +124,6 @@ const PaymentPage = () => {
         const value = e.target.value;
         setCashReceived(value);
 
-        // Calculate the change if the payment method is cash
         if (paymentMethod === 'Cash') {
             const cashAmount = parseFloat(value);
             if (!isNaN(cashAmount)) {
@@ -121,6 +138,16 @@ const PaymentPage = () => {
         <div>
             <h2>Payment</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
+            {orderSummary && (
+                <div>
+                    <p>Order ID: {orderId}</p>
+                    <p>Total Amount: ${orderSummary.totalAmount}</p>
+                    <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
+                        <span key={method}>{method}: ${amount.toFixed(2)} </span>
+                    ))}</p>
+                    {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
+                </div>
+            )}
             <p>Total Price: ${totalPrice.toFixed(2)}</p>
             <div>
                 <h3>Order Summary</h3>
@@ -237,7 +264,9 @@ const PaymentPage = () => {
                     PayPal
                 </label>
             </div>
-            <button onClick={handlePayment}>Complete Payment</button>
+            <button onClick={handlePayment} disabled={loading}>
+                {loading ? 'Processing...' : 'Complete Payment'}
+            </button>
 
             {showPopup && (
                 <div style={{
@@ -253,7 +282,7 @@ const PaymentPage = () => {
                     <p>Payment Successful!</p>
                     {orderSummary && (
                         <div>
-                            <p>Order ID: {orderSummary.id}</p>
+                            <p>Order ID: {orderId}</p>
                             <p>Total Amount: ${orderSummary.totalAmount}</p>
                             <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
                                 <span key={method}>{method}: ${amount.toFixed(2)} </span>
@@ -268,3 +297,4 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+

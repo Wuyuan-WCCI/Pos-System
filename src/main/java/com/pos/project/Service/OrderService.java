@@ -1,8 +1,10 @@
 package com.pos.project.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.pos.project.Entities.Customer;
 import com.pos.project.Entities.Order;
@@ -50,6 +52,17 @@ public class OrderService {
         }
 
         return orderRepository.save(order);
+    }
+
+    public Order updateOrder(long id, Order updatedOrder) {
+        Order existingOrder = this.orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order Not found" + id));
+
+        existingOrder.setStatus(updatedOrder.getStatus());
+        existingOrder.setPaymentMethods(updatedOrder.getPaymentMethods());
+        this.orderRepository.save(existingOrder);
+
+        return existingOrder;
     }
 
 }

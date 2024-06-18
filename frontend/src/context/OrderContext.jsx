@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
@@ -37,6 +37,20 @@ export const OrderProvider = ({ children }) => {
         }
     };
 
+    const updateOrder = async (orderId, updatedOrderData) => {
+        try {
+            const response = await axios.put(`http://localhost:8080/api/orders/${orderId}`, updatedOrderData);
+            // Update the local orders state with the updated order
+            const updatedOrders = orders.map(order => (order.id === orderId ? response.data : order));
+            setOrders(updatedOrders);
+            setOrder(response.data); // Optionally update the current order state
+            return response.data; // Return the updated order data if needed
+        } catch (error) {
+            console.error('Error updating order:', error);
+            throw error;
+        }
+    };
+
     OrderProvider.propTypes = {
         children: PropTypes.node.isRequired
     };
@@ -47,6 +61,7 @@ export const OrderProvider = ({ children }) => {
         fetchOrders,
         fetchOrder,
         addOrder,
+        updateOrder
     };
 
     return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;
