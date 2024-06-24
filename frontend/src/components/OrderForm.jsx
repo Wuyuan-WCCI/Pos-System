@@ -10,7 +10,6 @@ const OrderForm = () => {
     const [isExistingCustomer, setIsExistingCustomer] = useState(false);
     const { products, fetchProducts } = useContext(ProductContext);
     const navigate = useNavigate();
-   
 
     useEffect(() => {
         fetchProducts();
@@ -52,7 +51,8 @@ const OrderForm = () => {
             });
             const existingCustomer = response.data;
             if (existingCustomer) {
-                setCustomerInfo(existingCustomer); // Update customerInfo state
+                setCustomerInfo(existingCustomer); 
+                // Update customerInfo state
             } else {
                 alert('No customer found with this phone number.');
             }
@@ -70,16 +70,17 @@ const OrderForm = () => {
             status: 'Pending',
             orderDate: new Date().toISOString(),
         };
+        console.log("Customer checkout: ", customerInfo)
         try {
             const response = await axios.post('http://localhost:8080/api/orders', order);
             const newOrder = response.data;
-            navigate('/payment', { state: { orderItems, totalPrice, customerInfo , orderId: newOrder.id} });
-            console.log("order created: ", order);
-        } catch(error) {
-            console.error('Error creating order', error)
-            alert('Error Creating order. Please try again.')
+           
+            navigate(`/test/${newOrder.id}`, {state:{customerInfo}});
+            console.log("Customer redirect: ", customerInfo)
+        } catch (error) {
+            console.error('Error creating order', error);
+            alert('Error Creating order. Please try again.');
         }
-        
     };
 
     const handleCustomerInfoChange = (e) => {

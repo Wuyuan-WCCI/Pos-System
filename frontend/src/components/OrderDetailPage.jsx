@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { OrderContext } from '../context/OrderContext'; // Update the path accordingly
 
 const OrderDetailPage = () => {
@@ -7,6 +7,8 @@ const OrderDetailPage = () => {
     const { order, fetchOrder } = useContext(OrderContext); // Get the order and fetchOrder function from the context
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [redirect, setRedirect] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Fetch order details when the component mounts
@@ -18,6 +20,18 @@ const OrderDetailPage = () => {
                 setLoading(false);
             });
     }, [fetchOrder, orderId]);
+
+    // Redirect to PaymentPage when redirect state is true
+    useEffect(() => {
+        if (redirect) {
+            navigate(`/test/${orderId}`);
+        }
+    }, [redirect, navigate, orderId]);
+
+    // Handle checkout button click
+    const handleCheckout = () => {
+        setRedirect(true);
+    };
 
     // Render loading state while fetching order details
     if (loading) {
@@ -59,6 +73,9 @@ const OrderDetailPage = () => {
                         ))}
                     </ul>
                     {/* Render other order details as needed */}
+                    {order.status === 'Pending' && (
+                        <button onClick={handleCheckout}>CheckOut</button>
+                    )}
                 </div>
             )}
         </div>

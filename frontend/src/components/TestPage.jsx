@@ -1,13 +1,12 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { OrderContext } from '../context/OrderContext';
+import { OrderContext } from "../context/OrderContext";
 
-
-const PaymentPage = () => {
-    const { orderId } = useParams();
-    const navigate = useNavigate();
-    const { updateOrder } = useContext(OrderContext);
+const TestPage = () => {
+    const { orderId } = useParams(); // Get the orderId from the URL params
+    const [error, setError] = useState(''); // State to hold any error message
+    const [loading, setLoading] = useState(true);
     const [paymentMethod, setPaymentMethod] = useState('');
     const [giftCardCode, setGiftCardCode] = useState('');
     const [giftCardBalance, setGiftCardBalance] = useState(0);
@@ -17,24 +16,45 @@ const PaymentPage = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [orderSummary, setOrderSummary] = useState(null);
     const [change, setChange] = useState(0);
-    const [loadingPayment, setLoadingPayment] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const { order, fetchOrder, updateOrder } = useContext(OrderContext); // Get the fetchOrder and updateOrder functions from context
+    const orderItems = order?.orderItems || [];
+    const totalPrice = order?.totalAmount || 0;
+    const customerInfo = location?.state?.customerInfo || {} ;
+    
+    useEffect(() => {
+        // Fetch order details when the component mounts
+        const fetchOrderDetails = async () => {
+            try {
+                await fetchOrder(orderId);
+                setLoading(false);
+            } catch (error) {
+                setError('Error fetching order details.');
+                console.error('Error fetching order details:', error);
+                setLoading(false);
+            }
+        };
+
+        fetchOrderDetails();
+    }, [fetchOrder, orderId]);
 
     const handleGiftCardCheck = async () => {
-        setLoadingPayment(true);
+        setLoading(true);
         try {
             const response = await axios.get(`http://localhost:8080/api/giftcards/${giftCardCode}`);
             setGiftCardBalance(response.data.balance);
-        } catch (err) {
-            console.error('Error checking gift card balance:', err);
+        } catch (error) {
+            console.error('Error checking gift card balance:', error);
+            setError('Error checking gift card balance.');
         } finally {
-            setLoadingPayment(false);
+            setLoading(false);
         }
     };
 
     const handlePayment = async () => {
-        if (!order) return;
-
-        let remainingAmount = order.totalAmount;
+        let remainingAmount = totalPrice;
         let paymentMethods = {};
 
         if (!paymentMethod) {
@@ -42,19 +62,18 @@ const PaymentPage = () => {
             return;
         }
 
-        setLoadingPayment(true);
         try {
             if (paymentMethod === 'Gift Card') {
-                if (giftCardBalance >= order.totalAmount) {
+                if (giftCardBalance >= totalPrice) {
                     remainingAmount = 0;
-                    paymentMethods['Gift Card'] = order.totalAmount;
+                    paymentMethods['Gift Card'] = totalPrice;
                     await axios.put(`http://localhost:8080/api/giftcards`, {
                         code: giftCardCode,
-                        balance: giftCardBalance - order.totalAmount,
+                        balance: giftCardBalance - totalPrice,
                         isActive: true,
                     });
                 } else {
-                    remainingAmount = order.totalAmount - giftCardBalance;
+                    remainingAmount = totalPrice - giftCardBalance;
                     paymentMethods['Gift Card'] = giftCardBalance;
                     await axios.put(`http://localhost:8080/api/giftcards`, {
                         code: giftCardCode,
@@ -73,21 +92,21 @@ const PaymentPage = () => {
                 }
             } else if (paymentMethod === 'Cash') {
                 const cashAmount = parseFloat(cashReceived);
-                if (isNaN(cashAmount) || cashAmount < order.totalAmount) {
-                    alert(`Insufficient cash provided. Please provide at least $${order.totalAmount.toFixed(2)}.`);
+                if (isNaN(cashAmount) || cashAmount < totalPrice) {
+                    alert(`Insufficient cash provided. Please provide at least $${totalPrice.toFixed(2)}.`);
                     return;
                 } else {
-                    setChange(cashAmount - order.totalAmount);
-                    paymentMethods['Cash'] = order.totalAmount;
+                    setChange(cashAmount - totalPrice);
+                    paymentMethods['Cash'] = totalPrice;
                 }
             } else {
-                paymentMethods[paymentMethod] = order.totalAmount;
+                paymentMethods[paymentMethod] = totalPrice;
             }
 
             const orderSummaryData = {
-                customer: order.customer,
-                orderItems: order.orderItems,
-                totalAmount: order.totalAmount.toFixed(2),
+                customer: customerInfo,
+                orderItems,
+                totalAmount: totalPrice.toFixed(2),
                 paymentMethods: paymentMethods,
                 status: 'Completed',
                 orderDate: new Date().toISOString(),
@@ -105,11 +124,11 @@ const PaymentPage = () => {
                 setShowPopup(false);
                 navigate('/orders/new');
             }, 3000);
-        } catch (err) {
-            console.error('Error completing payment:', err);
+        } catch (error) {
+            console.error('Error completing payment:', error);
             alert('Error completing payment. Please try again.');
         } finally {
-            setLoadingPayment(false);
+            setLoading(false);
         }
     };
 
@@ -120,28 +139,17 @@ const PaymentPage = () => {
         if (paymentMethod === 'Cash') {
             const cashAmount = parseFloat(value);
             if (!isNaN(cashAmount)) {
-                setChange(cashAmount - (order ? order.totalAmount : 0));
+                setChange(cashAmount - totalPrice);
             } else {
                 setChange(0);
             }
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div style={{ color: 'red' }}>{error}</div>;
-    }
-
-    if (!order) {
-        return <div>No order found.</div>;
-    }
-
     return (
         <div>
             <h2>Payment</h2>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             {orderSummary && (
                 <div>
                     <p>Order ID: {orderId}</p>
@@ -152,11 +160,11 @@ const PaymentPage = () => {
                     {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
                 </div>
             )}
-            <p>Total Price: ${order.totalAmount}</p>
+            <p>Total Price: ${totalPrice.toFixed(2)}</p>
             <div>
                 <h3>Order Summary</h3>
                 <ul>
-                    {order.orderItems.map(item => (
+                    {orderItems.map(item => (
                         <li key={item.product.id}>
                             {item.product.name}: {item.quantity} x ${item.product.price.toFixed(2)} = ${(item.quantity * item.product.price).toFixed(2)}
                         </li>
@@ -165,10 +173,10 @@ const PaymentPage = () => {
             </div>
             <div>
                 <h3>Customer Information</h3>
-                <p>Name: {order.customer.name}</p>
-                <p>Email: {order.customer.email}</p>
-                <p>Phone: {order.customer.phone}</p>
-                <p>Address: {order.customer.address}</p>
+                <p>Name: {customerInfo.name}</p>
+                <p>Email: {customerInfo.email}</p>
+                <p>Phone: {customerInfo.phone}</p>
+                <p>Address: {customerInfo.address}</p>
             </div>
             <div>
                 <h3>Choose Payment Method</h3>
@@ -268,8 +276,8 @@ const PaymentPage = () => {
                     PayPal
                 </label>
             </div>
-            <button onClick={handlePayment} disabled={loadingPayment}>
-                {loadingPayment ? 'Processing...' : 'Complete Payment'}
+            <button onClick={handlePayment} disabled={loading}>
+                {loading ? 'Processing...' : 'Complete Payment'}
             </button>
 
             {showPopup && (
@@ -300,4 +308,4 @@ const PaymentPage = () => {
     );
 };
 
-export default PaymentPage;
+export default TestPage;
