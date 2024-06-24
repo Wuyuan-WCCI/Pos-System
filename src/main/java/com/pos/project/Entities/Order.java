@@ -1,10 +1,14 @@
 package com.pos.project.Entities;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "orders")
@@ -15,28 +19,37 @@ public class Order {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id")
+    @JsonBackReference
     private Customer customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    private Date orderDate;
+    @Column(name = "order_date")
+    private LocalDateTime orderDate;
+
     private String status;
     private double totalAmount;
-    private String paymentMethod;
+
+    @ElementCollection
+    @CollectionTable(name = "order_payment_methods", joinColumns = @JoinColumn(name = "order_id"))
+    @MapKeyColumn(name = "payment_method")
+    @Column(name = "amount")
+    private Map<String, BigDecimal> paymentMethods = new HashMap<>();
 
     public Order() {
     }
 
-    public Order(Long id, Customer customer, List<OrderItem> orderItems, Date orderDate, String status,
-            double totalAmount, String paymentMethod) {
+    public Order(Long id, Customer customer, List<OrderItem> orderItems, LocalDateTime orderDate, String status,
+            double totalAmount, Map<String, BigDecimal> paymentMethods) {
         this.id = id;
         this.customer = customer;
         this.orderItems = orderItems;
         this.orderDate = orderDate;
         this.status = status;
         this.totalAmount = totalAmount;
-        this.paymentMethod = paymentMethod;
+        this.paymentMethods = paymentMethods;
     }
 
     // Helper methods to manage the bi-directional relationship
@@ -79,11 +92,11 @@ public class Order {
         }
     }
 
-    public Date getOrderDate() {
+    public LocalDateTime getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
     }
 
@@ -103,12 +116,12 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public Map<String, BigDecimal> getPaymentMethods() {
+        return paymentMethods;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setPaymentMethods(Map<String, BigDecimal> paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 
     @Override
@@ -121,19 +134,19 @@ public class Order {
         return Double.compare(order.totalAmount, totalAmount) == 0 && Objects.equals(id, order.id)
                 && Objects.equals(customer, order.customer) && Objects.equals(orderItems, order.orderItems)
                 && Objects.equals(orderDate, order.orderDate) && Objects.equals(status, order.status)
-                && Objects.equals(paymentMethod, order.paymentMethod);
+                && Objects.equals(paymentMethods, order.paymentMethods);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, customer, orderItems, orderDate, status, totalAmount, paymentMethod);
+        return Objects.hash(id, customer, orderItems, orderDate, status, totalAmount, paymentMethods);
     }
 
     @Override
     public String toString() {
         return "Order{" +
                 "id=" + id +
-                ", customer=" + customer +
+                ", customer=" + customer.getName() +
                 ", orderItems=" + orderItems.stream()
                         .map(OrderItem::basicToString)
                         .collect(Collectors.toList())
@@ -141,7 +154,7 @@ public class Order {
                 ", orderDate=" + orderDate +
                 ", status='" + status + '\'' +
                 ", totalAmount=" + totalAmount +
-                ", paymentMethod='" + paymentMethod + '\'' +
+                ", paymentMethod='" + paymentMethods + '\'' +
                 '}';
     }
 

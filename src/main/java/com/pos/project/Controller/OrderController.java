@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import com.pos.project.Entities.Order;
 import com.pos.project.Entities.OrderItem;
 import com.pos.project.Service.OrderService;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -38,6 +41,7 @@ public class OrderController {
     // Endpoint to create a new order
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
+        order.setPaymentMethods(processPaymentMethods(order.getPaymentMethods()));
         Order savedOrder = orderService.saveOrder(order);
         return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
     }
@@ -62,5 +66,15 @@ public class OrderController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @PutMapping("/{id}")
+    public Order modifyOrder(@PathVariable Long id, @RequestBody Order updateOrder) {
+        return this.orderService.updateOrder(id, updateOrder);
+    }
+
+    private Map<String, BigDecimal> processPaymentMethods(Map<String, BigDecimal> paymentMethods) {
+        // Add logic here if you need to process payment methods before saving
+        return paymentMethods;
     }
 }

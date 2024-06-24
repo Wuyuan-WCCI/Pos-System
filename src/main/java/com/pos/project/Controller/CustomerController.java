@@ -32,6 +32,16 @@ public class CustomerController {
         }
     }
 
+    @GetMapping("/by-phone")
+    public ResponseEntity<Customer> getCustomerByPhone(@RequestParam String phone) {
+        Customer customer = customerService.getCustomerByPhone(phone);
+        if (customer != null) {
+            return new ResponseEntity<>(customer, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
         Customer savedCustomer = customerService.saveCustomer(customer);

@@ -22,6 +22,10 @@ public class CustomerService {
         return customerRepository.findById(id).orElse(null);
     }
 
+    public Customer getCustomerByPhone(String phone) {
+        return customerRepository.findByPhone(phone).orElse(null);
+    }
+
     public Customer saveCustomer(Customer customer) {
         return customerRepository.save(customer);
     }

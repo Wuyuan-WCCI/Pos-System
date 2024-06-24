@@ -1,10 +1,18 @@
 package com.pos.project.Entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 public class Customer {
@@ -18,11 +26,14 @@ public class Customer {
     private String phone;
     private String address;
 
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Order> orders = new ArrayList<>();
+
     public Customer() {
     }
 
-    public Customer(Long id, String name, String email, String phone, String address) {
-        this.id = id;
+    public Customer(String name, String email, String phone, String address) {
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -92,6 +103,24 @@ public class Customer {
     public Customer address(String address) {
         setAddress(address);
         return this;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
+
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setCustomer(this);
+    }
+
+    public void removeOrder(Order order) {
+        orders.remove(order);
+        order.setCustomer(null);
     }
 
     @Override

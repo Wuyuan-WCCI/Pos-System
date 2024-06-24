@@ -1,10 +1,13 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
+import axios from 'axios';
 
 const OrderForm = () => {
     const [orderItems, setOrderItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [customerInfo, setCustomerInfo] = useState({ name: '', email: '', phone: '', address: '' });
+    const [isExistingCustomer, setIsExistingCustomer] = useState(false);
     const { products, fetchProducts } = useContext(ProductContext);
     const navigate = useNavigate();
 
@@ -13,60 +16,146 @@ const OrderForm = () => {
     }, [fetchProducts]);
 
     const handleQuantityChange = (productId, quantity) => {
-        const updatedItems = [...orderItems];
-        const index = updatedItems.findIndex(item => item.productId === productId);
-        if (index !== -1) {
-            updatedItems[index].quantity = quantity;
-        } else {
-            const product = products.find(p => p.id === productId);
-            updatedItems.push({ 
-                productId, 
-                quantity, 
-                productName: product.name, 
-                productPrice: product.price 
-            });
-        }
+        if (quantity < 0) return;
+        const updatedItems = orderItems.map(item =>
+            item.product.id === productId ? { ...item, quantity } : item
+        );
         setOrderItems(updatedItems);
         calculateTotalPrice(updatedItems);
     };
 
     const calculateTotalPrice = (items) => {
-        let total = 0;
-        for (const item of items) {
-            const product = products.find(p => p.id === item.productId);
-            if (product) {
-                total += product.price * item.quantity;
-            }
-        }
+        if (!items) return;
+        const total = items.reduce((acc, item) => acc + item.quantity * item.product.price, 0);
         setTotalPrice(total);
     };
 
     const handleAddToOrder = (productId) => {
         const product = products.find(p => p.id === productId);
         if (product) {
-            const existingItem = orderItems.find(item => item.productId === productId);
+            const existingItem = orderItems.find(item => item.product.id === productId);
             if (existingItem) {
                 handleQuantityChange(productId, existingItem.quantity + 1);
             } else {
-                const updatedItems = [...orderItems, { 
-                    productId, 
-                    quantity: 1, 
-                    productName: product.name, 
-                    productPrice: product.price 
-                }];
-                setOrderItems(updatedItems);
-                calculateTotalPrice(updatedItems);
+                const newOrderItems = [...orderItems, { product, quantity: 1 }];
+                setOrderItems(newOrderItems);
+                calculateTotalPrice(newOrderItems);
             }
         }
     };
 
-    const handleCheckout = () => {
-        navigate('/payment', { state: { orderItems, totalPrice } });
+    const handleCustomerLookup = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/customers/by-phone`, {
+                params: { phone: customerInfo.phone }
+            });
+            const existingCustomer = response.data;
+            if (existingCustomer) {
+                setCustomerInfo(existingCustomer); 
+                // Update customerInfo state
+            } else {
+                alert('No customer found with this phone number.');
+            }
+        } catch (error) {
+            console.error('Error fetching existing customer:', error);
+            alert('Error fetching existing customer. Please try again.');
+        }
+    };
+
+    const handleCheckout = async () => {
+        const order = {
+            customer: customerInfo,
+            orderItems,
+            totalAmount: totalPrice.toFixed(2),
+            status: 'Pending',
+            orderDate: new Date().toISOString(),
+        };
+        console.log("Customer checkout: ", customerInfo)
+        try {
+            const response = await axios.post('http://localhost:8080/api/orders', order);
+            const newOrder = response.data;
+           
+            navigate(`/payment/${newOrder.id}`, {state:{customerInfo}});
+            console.log("Customer redirect: ", customerInfo)
+        } catch (error) {
+            console.error('Error creating order', error);
+            alert('Error Creating order. Please try again.');
+        }
+    };
+
+    const handleCustomerInfoChange = (e) => {
+        const { name, value } = e.target;
+        setCustomerInfo({ ...customerInfo, [name]: value });
     };
 
     return (
         <div>
             <h2>Create Order</h2>
+            <div>
+                <h3>Customer Type</h3>
+                <label>
+                    <input
+                        type="radio"
+                        name="customerType"
+                        value="new"
+                        checked={!isExistingCustomer}
+                        onChange={() => setIsExistingCustomer(false)}
+                    />
+                    New Customer
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        name="customerType"
+                        value="existing"
+                        checked={isExistingCustomer}
+                        onChange={() => setIsExistingCustomer(true)}
+                    />
+                    Existing Customer
+                </label>
+            </div>
+            {isExistingCustomer && (
+                <div>
+                    <h3>Enter Phone Number</h3>
+                    <input
+                        type="tel"
+                        name="phone"
+                        value={customerInfo.phone || ''}
+                        onChange={handleCustomerInfoChange}
+                    />
+                    <button onClick={handleCustomerLookup}>Find Customer</button>
+                </div>
+            )}
+            {!isExistingCustomer && (
+                <div>
+                    <h3>Customer Information</h3>
+                    <label>
+                        Name:
+                        <input type="text" name="name" value={customerInfo.name} onChange={handleCustomerInfoChange} />
+                    </label>
+                    <label>
+                        Email:
+                        <input type="email" name="email" value={customerInfo.email} onChange={handleCustomerInfoChange} />
+                    </label>
+                    <label>
+                        Phone:
+                        <input type="tel" name="phone" value={customerInfo.phone} onChange={handleCustomerInfoChange} />
+                    </label>
+                    <label>
+                        Address:
+                        <input type="text" name="address" value={customerInfo.address} onChange={handleCustomerInfoChange} />
+                    </label>
+                </div>
+            )}
+            {isExistingCustomer && customerInfo.name && (
+                <div>
+                    <h3>Customer Information</h3>
+                    <p>Name: {customerInfo.name}</p>
+                    <p>Email: {customerInfo.email}</p>
+                    <p>Phone: {customerInfo.phone}</p>
+                    <p>Address: {customerInfo.address}</p>
+                </div>
+            )}
             <div>
                 <h3>Products</h3>
                 <ul>
@@ -75,7 +164,8 @@ const OrderForm = () => {
                             <span>{product.name} - ${product.price.toFixed(2)}</span>
                             <input
                                 type="number"
-                                value={orderItems.find(item => item.productId === product.id)?.quantity || ''}
+                                min="0"
+                                value={orderItems.find(item => item.product.id === product.id)?.quantity || ''}
                                 onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
                             />
                             <button onClick={() => handleAddToOrder(product.id)}>Add</button>
@@ -87,8 +177,8 @@ const OrderForm = () => {
                 <h3>Order Summary</h3>
                 <ul>
                     {orderItems.map(item => (
-                        <li key={item.productId}>
-                            {products.find(p => p.id === item.productId)?.name}: {item.quantity}
+                        <li key={item.product.id}>
+                            {item.product.name}: {item.quantity}
                         </li>
                     ))}
                 </ul>

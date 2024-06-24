@@ -1,10 +1,9 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { OrderContext } from '../context/OrderContext';
+import { OrderContext } from "../context/OrderContext";
 
-
-const PaymentPage = () => {
+const TestPage = () => {
     const { orderId } = useParams(); // Get the orderId from the URL params
     const [error, setError] = useState(''); // State to hold any error message
     const [loading, setLoading] = useState(true);
@@ -313,4 +312,5 @@ const PaymentPage = () => {
         </div>
     );
 };
-export default PaymentPage;
+
+export default TestPage;
