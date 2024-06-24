@@ -22,7 +22,7 @@ const TestPage = () => {
     const { order, fetchOrder, updateOrder } = useContext(OrderContext); // Get the fetchOrder and updateOrder functions from context
     const orderItems = order?.orderItems || [];
     const totalPrice = order?.totalAmount || 0;
-    const customerInfo = location?.state?.customerInfo || {} ;
+    const customerInfo = location?.state?.customerInfo || null ;
     
     useEffect(() => {
         // Fetch order details when the component mounts
@@ -171,13 +171,18 @@ const TestPage = () => {
                     ))}
                 </ul>
             </div>
-            <div>
+            {customerInfo && (
+                <div>
                 <h3>Customer Information</h3>
                 <p>Name: {customerInfo.name}</p>
                 <p>Email: {customerInfo.email}</p>
                 <p>Phone: {customerInfo.phone}</p>
                 <p>Address: {customerInfo.address}</p>
             </div>
+            )
+                
+            }
+           
             <div>
                 <h3>Choose Payment Method</h3>
                 <label>

@@ -75,7 +75,7 @@ const OrderForm = () => {
             const response = await axios.post('http://localhost:8080/api/orders', order);
             const newOrder = response.data;
            
-            navigate(`/test/${newOrder.id}`, {state:{customerInfo}});
+            navigate(`/payment/${newOrder.id}`, {state:{customerInfo}});
             console.log("Customer redirect: ", customerInfo)
         } catch (error) {
             console.error('Error creating order', error);

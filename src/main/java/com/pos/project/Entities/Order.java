@@ -3,6 +3,7 @@ package com.pos.project.Entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -25,7 +26,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    private Date orderDate;
+    @Column(name = "order_date")
+    private LocalDateTime orderDate;
+
     private String status;
     private double totalAmount;
 
@@ -38,7 +41,7 @@ public class Order {
     public Order() {
     }
 
-    public Order(Long id, Customer customer, List<OrderItem> orderItems, Date orderDate, String status,
+    public Order(Long id, Customer customer, List<OrderItem> orderItems, LocalDateTime orderDate, String status,
             double totalAmount, Map<String, BigDecimal> paymentMethods) {
         this.id = id;
         this.customer = customer;
@@ -89,11 +92,11 @@ public class Order {
         }
     }
 
-    public Date getOrderDate() {
+    public LocalDateTime getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
     }
 

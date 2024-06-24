@@ -1,17 +1,15 @@
 package com.pos.project.Controller;
 
-import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import com.pos.project.Repository.OrderRepository;
 import com.pos.project.Entities.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,35 +24,53 @@ public class SalesHistoryController {
     private OrderRepository orderRepository;
 
     @GetMapping("/day")
-    public List<Order> getSalesByDay(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return orderRepository.findAllByOrderDateBetween(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
+    public Page<Order> getSalesByDay(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("page") int page) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        return orderRepository.findAllByOrderDateBetween(startOfDay, endOfDay,
+                PageRequest.of(page - 1, pageSize, Sort.by("orderDate").descending()));
     }
 
     @GetMapping("/week")
-    public List<Order> getSalesByWeek(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public Page<Order> getSalesByWeek(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("page") int page) {
         LocalDate startOfWeek = date.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = startOfWeek.plusDays(6);
-        return orderRepository.findAllByOrderDateBetween(startOfWeek.atStartOfDay(),
-                endOfWeek.plusDays(1).atStartOfDay());
+        LocalDateTime startOfWeekDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endOfWeekDateTime = endOfWeek.plusDays(1).atStartOfDay();
+        return orderRepository.findAllByOrderDateBetween(startOfWeekDateTime, endOfWeekDateTime,
+                PageRequest.of(page - 1, pageSize, Sort.by("orderDate").descending()));
     }
 
     @GetMapping("/month")
-    public List<Order> getSalesByMonth(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public Page<Order> getSalesByMonth(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("page") int page) {
         YearMonth yearMonth = YearMonth.from(date);
         LocalDate firstDay = yearMonth.atDay(1);
         LocalDate lastDay = yearMonth.atEndOfMonth();
-        return orderRepository.findAllByOrderDateBetween(firstDay.atStartOfDay(), lastDay.plusDays(1).atStartOfDay());
+        LocalDateTime firstDayDateTime = firstDay.atStartOfDay();
+        LocalDateTime lastDayDateTime = lastDay.plusDays(1).atStartOfDay();
+        return orderRepository.findAllByOrderDateBetween(firstDayDateTime, lastDayDateTime,
+                PageRequest.of(page - 1, pageSize, Sort.by("orderDate").descending()));
     }
 
     @GetMapping("/year")
-    public List<Order> getSalesByYear(
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        LocalDate firstDay = date.withDayOfYear(1);
-        LocalDate lastDay = date.withDayOfYear(date.lengthOfYear());
-        return orderRepository.findAllByOrderDateBetween(firstDay.atStartOfDay(), lastDay.plusDays(1).atStartOfDay());
+    public Page<Order> getSalesByYear(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam("pageSize") int pageSize,
+            @RequestParam("page") int page) {
+        LocalDate startOfYear = date.withDayOfYear(1);
+        LocalDate endOfYear = date.withDayOfYear(date.lengthOfYear());
+        LocalDateTime startOfYearDateTime = startOfYear.atStartOfDay();
+        LocalDateTime endOfYearDateTime = endOfYear.plusDays(1).atStartOfDay();
+        return orderRepository.findAllByOrderDateBetween(startOfYearDateTime, endOfYearDateTime,
+                PageRequest.of(page - 1, pageSize, Sort.by("orderDate").descending()));
     }
-
 }

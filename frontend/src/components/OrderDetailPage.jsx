@@ -24,7 +24,7 @@ const OrderDetailPage = () => {
     // Redirect to PaymentPage when redirect state is true
     useEffect(() => {
         if (redirect) {
-            navigate(`/test/${orderId}`);
+            navigate(`/payment/${orderId}`);
         }
     }, [redirect, navigate, orderId]);
 
