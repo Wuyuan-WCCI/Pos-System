@@ -13,7 +13,8 @@ const ProductList = () => {
             <h2>Product List</h2>
             <ul>
                 {products.map(product => (
-                    <li key={product.id}>{product.name} - ${product.price.toFixed(2)}</li>
+                    <li key={product.id}>
+                    {product.name} - ${product.price.toFixed(2)} -- Quantity: {product.quantityInStock}</li>
                 ))}
             </ul>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -12,12 +12,7 @@ const SalesHistoryPage = () => {
     const [pageSize, setPageSize] = useState(25); // Default page size
     const [currentPage, setCurrentPage] = useState(1); // Current page
 
-    useEffect(() => {
-        fetchSalesHistory();
-        fetchAllSalesHistory(); // Fetch all sales data for totals
-    }, [date, period, pageSize, currentPage]);
-
-    const fetchSalesHistory = async () => {
+    const fetchSalesHistory = useCallback(async () => {
         try {
             const formattedDate = format(date, 'yyyy-MM-dd');
             const response = await axios.get(`http://localhost:8080/api/sales-history/${period}?date=${formattedDate}&pageSize=${pageSize}&page=${currentPage}`);
@@ -25,9 +20,9 @@ const SalesHistoryPage = () => {
         } catch (error) {
             console.error('Error fetching sales history:', error);
         }
-    };
+    }, [date, period, pageSize, currentPage]);
 
-    const fetchAllSalesHistory = async () => {
+    const fetchAllSalesHistory = useCallback(async () => {
         try {
             const formattedDate = format(date, 'yyyy-MM-dd');
             let allData = [];
@@ -43,7 +38,12 @@ const SalesHistoryPage = () => {
         } catch (error) {
             console.error('Error fetching all sales history:', error);
         }
-    };
+    }, [date, period]);
+
+    useEffect(() => {
+        fetchSalesHistory();
+        fetchAllSalesHistory(); // Fetch all sales data for totals
+    }, [fetchSalesHistory, fetchAllSalesHistory]);
 
     const calculateTotalByPaymentMethod = (data) => {
         return data.reduce((acc, order) => {
@@ -60,10 +60,14 @@ const SalesHistoryPage = () => {
 
     const totalByPaymentMethod = calculateTotalByPaymentMethod(allSalesHistory);
 
-
-
     const handlePageChange = (page) => {
         setCurrentPage(page);
+    };
+
+    const handleDateChange = (e) => {
+        const selectedDate = parseISO(e.target.value);
+        setDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0)); // Set to start of day local time
+        setCurrentPage(1); // Reset to first page when date changes
     };
 
     return (
@@ -78,10 +82,7 @@ const SalesHistoryPage = () => {
                     <input
                         type="date"
                         value={format(date, 'yyyy-MM-dd')}
-                        onChange={(e) => {
-                            const selectedDate = parseISO(e.target.value);
-                            setDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0)); // Set to start of day local time
-                        }}
+                        onChange={handleDateChange}
                     />
                 </div>
                 <div className="filter-item">
@@ -93,13 +94,12 @@ const SalesHistoryPage = () => {
                         <option value="year">Year</option>
                     </select>
                 </div>
-               
                 <div className="filter-item">
                     <label>Show per page:</label>
                     <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
                         <option value={25}>25</option>
                         <option value={50}>50</option>
-                        <option value={100}>100</option>
+                        <option value={100}>100}</option>
                     </select>
                 </div>
             </section>

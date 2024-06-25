@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.pos.project.Entities.Order;
 import com.pos.project.Entities.Product;
 import com.pos.project.Service.ProductService;
 import java.util.List;
@@ -36,6 +38,11 @@ public class ProductController {
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         Product savedProduct = productService.saveProduct(product);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public Product updateProduct(@PathVariable Long id, @RequestBody Product updateProduct) {
+        return this.productService.updateProduct(id, updateProduct);
     }
 
     @DeleteMapping("/{id}")

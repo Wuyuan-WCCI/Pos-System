@@ -34,13 +34,19 @@ const OrderForm = () => {
         const product = products.find(p => p.id === productId);
         if (product) {
             const existingItem = orderItems.find(item => item.product.id === productId);
-            if (existingItem) {
-                handleQuantityChange(productId, existingItem.quantity + 1);
-            } else {
-                const newOrderItems = [...orderItems, { product, quantity: 1 }];
-                setOrderItems(newOrderItems);
-                calculateTotalPrice(newOrderItems);
+            const quantityToAdd = existingItem? existingItem.quantity + 1 : 1;
+            if (quantityToAdd <= product.quantityInStock){
+                if (existingItem) {
+                    handleQuantityChange(productId, existingItem.quantity + 1);
+                } else {
+                    const newOrderItems = [...orderItems, { product, quantity: 1 }];
+                    setOrderItems(newOrderItems);
+                    calculateTotalPrice(newOrderItems);
+                }
+            }else {
+                alert("Cannot add more of ${product.name} to order. Only ${product.quantityInStock} left in stock")
             }
+           
         }
     };
 
@@ -168,6 +174,7 @@ const OrderForm = () => {
                                 value={orderItems.find(item => item.product.id === product.id)?.quantity || ''}
                                 onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
                             />
+                            <span>Quantity In stock---{product.quantityInStock}</span>
                             <button onClick={() => handleAddToOrder(product.id)}>Add</button>
                         </li>
                     ))}

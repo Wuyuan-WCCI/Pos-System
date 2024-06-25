@@ -119,6 +119,16 @@ const PaymentPage = () => {
                 status: 'Completed'
             });
 
+            //Update product quantities in stock
+            //Assuming each order item has a product.id and quantity, update the stock
+            for (const item of orderItems) {
+                const productId = item.product.id;
+                const newQuantityInStock = item.product.quantityInStock - item.quantity;
+                await axios.put(`http://localhost:8080/api/products/${productId}`, {
+                    quantityInStock: newQuantityInStock
+                });
+            }
+
             setOrderSummary(orderSummaryData);
             setShowPopup(true);
             setTimeout(() => {
@@ -183,7 +193,6 @@ const PaymentPage = () => {
             )
                 
             }
-           
             <div>
                 <h3>Choose Payment Method</h3>
                 <label>
