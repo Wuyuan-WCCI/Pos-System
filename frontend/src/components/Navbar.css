@@ -1,0 +1,27 @@
+/* src/components/Navbar.css */
+.navbar {
+    background-color: #343a40; /* Dark background */
+    position: fixed; /* Fix the navbar at the top */
+    top: 0; /* Position at the top */
+    width: 100%; /* Full width */
+    z-index: 10; /* Ensure it is above other elements */
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    color: #ffffff;
+    margin-right: 15px;
+}
+
+.nav-link:hover {
+    color: #f8f9fa;
+    text-decoration: underline;
+}

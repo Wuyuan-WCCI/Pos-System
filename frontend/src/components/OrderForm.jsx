@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductContext } from '../context/ProductContext';
 import axios from 'axios';
+import './OrderForm.css'; // Import custom styles
 
 const OrderForm = () => {
     const [orderItems, setOrderItems] = useState([]);
@@ -34,8 +35,8 @@ const OrderForm = () => {
         const product = products.find(p => p.id === productId);
         if (product) {
             const existingItem = orderItems.find(item => item.product.id === productId);
-            const quantityToAdd = existingItem? existingItem.quantity + 1 : 1;
-            if (quantityToAdd <= product.quantityInStock){
+            const quantityToAdd = existingItem ? existingItem.quantity + 1 : 1;
+            if (quantityToAdd <= product.quantityInStock) {
                 if (existingItem) {
                     handleQuantityChange(productId, existingItem.quantity + 1);
                 } else {
@@ -43,10 +44,9 @@ const OrderForm = () => {
                     setOrderItems(newOrderItems);
                     calculateTotalPrice(newOrderItems);
                 }
-            }else {
-                alert("Cannot add more of ${product.name} to order. Only ${product.quantityInStock} left in stock")
+            } else {
+                alert(`Cannot add more of ${product.name} to order. Only ${product.quantityInStock} left in stock.`);
             }
-           
         }
     };
 
@@ -58,7 +58,6 @@ const OrderForm = () => {
             const existingCustomer = response.data;
             if (existingCustomer) {
                 setCustomerInfo(existingCustomer); 
-                // Update customerInfo state
             } else {
                 alert('No customer found with this phone number.');
             }
@@ -76,16 +75,13 @@ const OrderForm = () => {
             status: 'Pending',
             orderDate: new Date().toISOString(),
         };
-        console.log("Customer checkout: ", customerInfo)
         try {
             const response = await axios.post('http://localhost:8080/api/orders', order);
             const newOrder = response.data;
-           
-            navigate(`/payment/${newOrder.id}`, {state:{customerInfo}});
-            console.log("Customer redirect: ", customerInfo)
+            navigate(`/payment/${newOrder.id}`, { state: { customerInfo } });
         } catch (error) {
             console.error('Error creating order', error);
-            alert('Error Creating order. Please try again.');
+            alert('Error creating order. Please try again.');
         }
     };
 
@@ -95,102 +91,123 @@ const OrderForm = () => {
     };
 
     return (
-        <div>
-            <h2>Create Order</h2>
-            <div>
+        <div className="container mt-5">
+            <h2 className="text-center">Create Order</h2>
+            <div className="customer-section my-4 p-3 rounded shadow-sm">
                 <h3>Customer Type</h3>
-                <label>
+                <div className="form-check form-check-inline">
                     <input
                         type="radio"
+                        className="form-check-input"
                         name="customerType"
                         value="new"
                         checked={!isExistingCustomer}
                         onChange={() => setIsExistingCustomer(false)}
                     />
-                    New Customer
-                </label>
-                <label>
+                    <label className="form-check-label">New Customer</label>
+                </div>
+                <div className="form-check form-check-inline">
                     <input
                         type="radio"
+                        className="form-check-input"
                         name="customerType"
                         value="existing"
                         checked={isExistingCustomer}
                         onChange={() => setIsExistingCustomer(true)}
                     />
-                    Existing Customer
-                </label>
+                    <label className="form-check-label">Existing Customer</label>
+                </div>
             </div>
+
             {isExistingCustomer && (
-                <div>
+                <div className="customer-lookup my-4 p-3 rounded shadow-sm">
                     <h3>Enter Phone Number</h3>
                     <input
                         type="tel"
+                        className="form-control"
                         name="phone"
                         value={customerInfo.phone || ''}
                         onChange={handleCustomerInfoChange}
                     />
-                    <button onClick={handleCustomerLookup}>Find Customer</button>
+                    <button className="btn btn-primary mt-2" onClick={handleCustomerLookup}>Find Customer</button>
                 </div>
             )}
+
             {!isExistingCustomer && (
-                <div>
+                <div className="customer-info my-4 p-3 rounded shadow-sm">
                     <h3>Customer Information</h3>
-                    <label>
-                        Name:
-                        <input type="text" name="name" value={customerInfo.name} onChange={handleCustomerInfoChange} />
-                    </label>
-                    <label>
-                        Email:
-                        <input type="email" name="email" value={customerInfo.email} onChange={handleCustomerInfoChange} />
-                    </label>
-                    <label>
-                        Phone:
-                        <input type="tel" name="phone" value={customerInfo.phone} onChange={handleCustomerInfoChange} />
-                    </label>
-                    <label>
-                        Address:
-                        <input type="text" name="address" value={customerInfo.address} onChange={handleCustomerInfoChange} />
-                    </label>
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Name</label>
+                            <input type="text" className="form-control" name="name" value={customerInfo.name} onChange={handleCustomerInfoChange} />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Email</label>
+                            <input type="email" className="form-control" name="email" value={customerInfo.email} onChange={handleCustomerInfoChange} />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Phone</label>
+                            <input type="tel" className="form-control" name="phone" value={customerInfo.phone} onChange={handleCustomerInfoChange} />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                            <label className="form-label">Address</label>
+                            <input type="text" className="form-control" name="address" value={customerInfo.address} onChange={handleCustomerInfoChange} />
+                        </div>
+                    </div>
                 </div>
             )}
+
             {isExistingCustomer && customerInfo.name && (
-                <div>
+                <div className="existing-customer-info my-4 p-3 rounded shadow-sm">
                     <h3>Customer Information</h3>
-                    <p>Name: {customerInfo.name}</p>
-                    <p>Email: {customerInfo.email}</p>
-                    <p>Phone: {customerInfo.phone}</p>
-                    <p>Address: {customerInfo.address}</p>
+                    <p><strong>Name:</strong> {customerInfo.name}</p>
+                    <p><strong>Email:</strong> {customerInfo.email}</p>
+                    <p><strong>Phone:</strong> {customerInfo.phone}</p>
+                    <p><strong>Address:</strong> {customerInfo.address}</p>
                 </div>
             )}
-            <div>
+
+            <div className="products-section my-4 p-3 rounded shadow-sm">
                 <h3>Products</h3>
-                <ul>
+                <div className="row">
                     {products.map(product => (
-                        <li key={product.id}>
-                            <span>{product.name} - ${product.price.toFixed(2)}</span>
-                            <input
-                                type="number"
-                                min="0"
-                                value={orderItems.find(item => item.product.id === product.id)?.quantity || ''}
-                                onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
-                            />
-                            <span>Quantity In stock---{product.quantityInStock}</span>
-                            <button onClick={() => handleAddToOrder(product.id)}>Add</button>
-                        </li>
+                        <div key={product.id} className="col-md-6 col-lg-4 mb-3">
+                            <div className="card product-card d-flex">
+                                <div className="card-body">
+                                    <h5 className="card-title">{product.name}</h5>
+                                    <h6 className="card-subtitle mb-2 text-muted">${product.price.toFixed(2)}</h6>
+                                    <p className="card-text">In stock: {product.quantityInStock}</p>
+                                </div>
+                                <div className="card-body">
+                                    <div className="input-group">
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            min="0"
+                                            value={orderItems.find(item => item.product.id === product.id)?.quantity || ''}
+                                            onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
+                                        />
+                                        <button className="btn btn-primary" onClick={() => handleAddToOrder(product.id)}>Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </div>
-            <div>
+
+            <div className="order-summary my-4 p-3 rounded shadow-sm">
                 <h3>Order Summary</h3>
-                <ul>
+                <ul className="list-group mb-3">
                     {orderItems.map(item => (
-                        <li key={item.product.id}>
-                            {item.product.name}: {item.quantity}
+                        <li key={item.product.id} className="list-group-item d-flex justify-content-between align-items-center">
+                            {item.product.name}
+                            <span className="badge bg-primary rounded-pill">{item.quantity}</span>
                         </li>
                     ))}
                 </ul>
-                <p>Total Price: ${totalPrice.toFixed(2)}</p>
-                <button onClick={handleCheckout}>Checkout</button>
+                <p className="total-price"><strong>Total Price: ${totalPrice.toFixed(2)}</strong></p>
+                <button className="btn btn-success w-100" onClick={handleCheckout}>Checkout</button>
             </div>
         </div>
     );

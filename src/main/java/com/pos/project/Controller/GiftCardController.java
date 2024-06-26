@@ -31,36 +31,58 @@ public class GiftCardController {
 
     @GetMapping
     public ResponseEntity<List<GiftCard>> getAllGiftCards() {
-        List<GiftCard> customers = giftCardService.getAllGiftCards();
-        return new ResponseEntity<>(customers, HttpStatus.OK);
+        List<GiftCard> giftCards = giftCardService.getAllGiftCards();
+        return new ResponseEntity<>(giftCards, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<GiftCard> createGiftCard(@RequestBody GiftCard giftCard) {
-        GiftCard createGiftCard = giftCardService.createGiftCard(giftCard);
-        return ResponseEntity.ok(createGiftCard);
+    public ResponseEntity<?> createGiftCard(@RequestBody GiftCard giftCard) {
+        try {
+            // Validate gift card code
+            if (giftCard.getCode() == null || giftCard.getCode().isEmpty()) {
+                return ResponseEntity.badRequest().body("Gift card code cannot be null or empty.");
+            }
+
+            // Check if gift card with the same code already exists
+            Optional<GiftCard> existingGiftCardOpt = giftCardRepository.findByCode(giftCard.getCode());
+            if (existingGiftCardOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Gift card with code " + giftCard.getCode() + " already exists.");
+            }
+
+            // Proceed with creating the gift card
+            GiftCard createdGiftCard = giftCardService.createGiftCard(giftCard);
+            return ResponseEntity.ok(createdGiftCard);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating gift card: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<GiftCard> getGiftCardByCode(@PathVariable String code) {
-        return giftCardService.getGiftCardByCode(code)
-                .map(ResponseEntity::ok)
+    public ResponseEntity<?> getGiftCardByCode(@PathVariable String code) {
+        Optional<GiftCard> giftCardOpt = giftCardService.getGiftCardByCode(code);
+        return giftCardOpt.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping
-    public ResponseEntity<GiftCard> updateGiftCard(@RequestBody GiftCard giftCard) {
-        Optional<GiftCard> existingGiftCardOpt = giftCardRepository.findByCode(giftCard.getCode());
-        if (existingGiftCardOpt.isPresent()) {
-            GiftCard existingGiftCard = existingGiftCardOpt.get();
-            existingGiftCard.setBalance(giftCard.getBalance());
-            existingGiftCard.setIsActive(giftCard.getIsActive());
-            giftCardRepository.save(existingGiftCard);
-            return ResponseEntity.ok(existingGiftCard);
-        } else {
-            // handle the case where the gift card does not exist
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<?> updateGiftCard(@RequestBody GiftCard giftCard) {
+        try {
+            Optional<GiftCard> existingGiftCardOpt = giftCardRepository.findByCode(giftCard.getCode());
+            if (existingGiftCardOpt.isPresent()) {
+                GiftCard existingGiftCard = existingGiftCardOpt.get();
+                existingGiftCard.setBalance(giftCard.getBalance());
+                existingGiftCard.setIsActive(giftCard.getIsActive());
+                giftCardRepository.save(existingGiftCard);
+                return ResponseEntity.ok(existingGiftCard);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Gift card with code " + giftCard.getCode() + " not found.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating gift card: " + e.getMessage());
         }
     }
-
 }
