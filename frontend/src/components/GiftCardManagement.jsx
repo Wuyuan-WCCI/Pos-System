@@ -1,168 +1,213 @@
 import React, { useState } from "react";
 import axios from 'axios';
-import './GiftCardManagement.css'; // Import the CSS file for styling
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './GiftCardManagement.css';
 
 const GiftCardManagement = () => {
-    const [code, setCode] = useState('');
-    const [balance, setBalance] = useState(0);
-    const [isActive, setIsActive] = useState(true);
+    const [formData, setFormData] = useState({
+        code: '',
+        balance: 0,
+        isActive: true,
+        rechargeAmount: 0,
+    });
     const [message, setMessage] = useState('');
     const [activeFeature, setActiveFeature] = useState(null);
     const [showConfirmButton, setShowConfirmButton] = useState(false);
-    const [rechargeAmount, setRechargeAmount] = useState(0);
 
-
-    const createGiftCard = async () => {
-        try {
-            const response = await axios.post('http://localhost:8080/api/giftcards', { code, balance, isActive });
-            console.log('Gift card created', response.data);
-            setMessage('Gift card created successfully.');
-            setShowConfirmButton(true);
-        } catch (error) {
-            console.log('Error creating gift card:', error);
-            setMessage('Error creating gift card.');
-        }
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: name === 'balance' || name === 'rechargeAmount' ? parseFloat(value) : value });
     };
 
-    const checkGiftCardBalance = async () => {
+    const handleAction = async (action) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/giftcards/${code}`);
-            setBalance(response.data.balance);
-            setIsActive(response.data.isActive);
-            setMessage(`Gift card balance is $${response.data.balance}`);
+            let response;
+            switch (action) {
+                case 'create':
+                    if (!formData.code) {
+                        alert('Gift card code cannot be empty.');
+                        return;
+                    }
+                    response = await axios.post('http://localhost:8080/api/giftcards', formData);
+                    setMessage('Gift card created successfully.');
+                    break;
+                case 'balance':
+                    response = await axios.get(`http://localhost:8080/api/giftcards/${formData.code}`);
+                    setFormData({ ...formData, balance: response.data.balance, isActive: response.data.isActive });
+                    setMessage(`Gift card balance is $${response.data.balance}`);
+                    break;
+                case 'recharge':
+                    response = await axios.put(`http://localhost:8080/api/giftcards`, { code: formData.code, balance: formData.balance + formData.rechargeAmount });
+                    setFormData({ ...formData, balance: response.data.balance });
+                    setMessage('Gift card recharged successfully.');
+                    break;
+                case 'activation':
+                    response = await axios.put(`http://localhost:8080/api/giftcards`, { code: formData.code, isActive: !formData.isActive });
+                    setFormData({ ...formData, isActive: response.data.isActive });
+                    setMessage(`Gift card ${response.data.isActive ? 'activated' : 'deactivated'} successfully.`);
+                    break;
+                default:
+                    setMessage('Unknown action.');
+            }
             setShowConfirmButton(true);
         } catch (error) {
-            console.log('Error checking gift card balance:', error);
-            setMessage('Error checking gift card balance.');
-        }
-    };
-
-    const rechargeGiftCard = async () => {
-        try {
-            const response = await axios.put(`http://localhost:8080/api/giftcards`, { code, balance: balance + rechargeAmount });
-            setBalance(response.data.balance);
-            setMessage('Gift card recharged successfully.');
-            setShowConfirmButton(true);
-        } catch (error) {
-            console.log('Error recharging gift card:', error);
-            setMessage('Error recharging gift card.');
-        }
-    };
-    
-
-    const toggleGiftCardActivation = async () => {
-        try {
-            const response = await axios.put(`http://localhost:8080/api/giftcards`, { code, isActive: !isActive });
-            setIsActive(response.data.isActive);
-            setMessage(`Gift card ${response.data.isActive ? 'activated' : 'deactivated'} successfully.`);
-            setShowConfirmButton(true);
-        } catch (error) {
-            console.log('Error toggling gift card activation:', error);
-            setMessage('Error toggling gift card activation.');
+            console.log(`Error performing ${action}:`, error);
+            if (error.response && error.response.status === 409) {
+                alert(`Gift card with code ${formData.code} already exists.`);
+            } else {
+                alert(`Error performing ${action}. Please try again later.`);
+            }
         }
     };
 
     const handleConfirm = () => {
         setMessage('All operations completed successfully.');
         setShowConfirmButton(false);
-        setActiveFeature(null); // Reset active feature
+        setActiveFeature(null);
     };
 
     return (
-        <div className="gift-card-management">
-            <h2>Gift Card Management</h2>
-
-            <button onClick={() => setActiveFeature(activeFeature === 'create' ? null : 'create')} disabled={activeFeature && activeFeature !== 'create'}>
-                {activeFeature === 'create' ? 'Gift Card Code' : 'New Gift Card'}
-            </button>
-            {activeFeature === 'create' && (
-                <div className="form-group">
-                    <label htmlFor="code">Gift Card Code:</label>
-                    <input
-                        id="code"
-                        type="text"
-                        placeholder="Code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                    />
-                    <label htmlFor="balance">Initial Balance:</label>
-                    <input
-                        id="balance"
-                        type='number'
-                        placeholder="Balance"
-                        value={balance}
-                        onChange={(e) => setBalance(parseFloat(e.target.value))}
-                    />
-                    <button onClick={createGiftCard}>Create Gift Card</button>
-                </div>
-            )}
-
-            <button onClick={() => setActiveFeature(activeFeature === 'balance' ? null : 'balance')} disabled={activeFeature && activeFeature !== 'balance'}>
-                {activeFeature === 'balance' ? 'Enter Gift Card Code' : 'Check Gift Card Balance'}
-            </button>
-            {activeFeature === 'balance' && (
-                <div className="form-group">
-                    <label htmlFor="code">Gift Card Code:</label>
-                    <input
-                        id="code"
-                        type="text"
-                        placeholder="Code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                    />
-                    <button onClick={checkGiftCardBalance}>Check Balance</button>
-                </div>
-            )}
-
-            <button onClick={() => setActiveFeature(activeFeature === 'recharge' ? null : 'recharge')} disabled={activeFeature && activeFeature !== 'recharge'}>
-                {activeFeature === 'recharge' ? 'Hide Recharge Form' : 'Show Recharge Form'}
-            </button>
-            {activeFeature === 'recharge' && (
-                <div className="form-group">
-                    <label htmlFor="rechargeCode">Gift Card Code:</label>
-                    <input
-                        id="rechargeCode"
-                        type="text"
-                        placeholder="Code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                    />
-                    <label htmlFor="rechargeAmount">Recharge Amount:</label>
-    <input
-        id="rechargeAmount"
-        type='number'
-        placeholder="Recharge Amount"
-        value={rechargeAmount}
-        onChange={(e) => setRechargeAmount(parseFloat(e.target.value))}
-    />
-    <button onClick={rechargeGiftCard}>Recharge Gift Card</button>
-                </div>
-            )}
-
-            <button onClick={() => setActiveFeature(activeFeature === 'activation' ? null : 'activation')} disabled={activeFeature && activeFeature !== 'activation'}>
-                {activeFeature === 'activation' ? 'Hide Activation/Deactivation Form' : 'Show Activation/Deactivation Form'}
-            </button>
-            {activeFeature === 'activation' && (
-                <div className="form-group">
-                    <label htmlFor="activationCode">Gift Card Code:</label>
-                    <input
-                        id="activationCode"
-                        type="text"
-                        placeholder="Code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                    />
-                    <button onClick={toggleGiftCardActivation}>
-                        {isActive ? 'Deactivate' : 'Activate'} Gift Card
-                    </button>
-                </div>
-            )}
+        <div className="container mt-5">
+            <header className="mb-4">
+                <h1 className="text-center">Gift Card Management</h1>
+            </header>
+            <nav className="nav nav-pills nav-fill mb-4">
+                <button className={`nav-item nav-link ${activeFeature === 'create' ? 'active' : ''}`} onClick={() => setActiveFeature('create')}>Create Gift Card</button>
+                <button className={`nav-item nav-link ${activeFeature === 'balance' ? 'active' : ''}`} onClick={() => setActiveFeature('balance')}>Check Balance</button>
+                <button className={`nav-item nav-link ${activeFeature === 'recharge' ? 'active' : ''}`} onClick={() => setActiveFeature('recharge')}>Recharge Card</button>
+                <button className={`nav-item nav-link ${activeFeature === 'activation' ? 'active' : ''}`} onClick={() => setActiveFeature('activation')}>Activate/Deactivate</button>
+            </nav>
+            <div className="row">
+                {activeFeature === 'create' && (
+                    <div className="col-md-6 offset-md-3">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h5 className="card-title">Create New Gift Card</h5>
+                                <div className="form-group">
+                                    <label htmlFor="createCode">Gift Card Code:</label>
+                                    <input
+                                        id="createCode"
+                                        name="code"
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Code"
+                                        value={formData.code}
+                                        onChange={handleInputChange}
+                                    />
+                                    <label htmlFor="createBalance">Initial Balance:</label>
+                                    <input
+                                        id="createBalance"
+                                        name="balance"
+                                        type="number"
+                                        className="form-control"
+                                        placeholder="Balance"
+                                        value={formData.balance}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button className="btn btn-primary mt-3" onClick={() => handleAction('create')}>Create Gift Card</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {activeFeature === 'balance' && (
+                    <div className="col-md-6 offset-md-3">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h5 className="card-title">Check Gift Card Balance</h5>
+                                <div className="form-group">
+                                    <label htmlFor="balanceCode">Gift Card Code:</label>
+                                    <input
+                                        id="balanceCode"
+                                        name="code"
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Code"
+                                        value={formData.code}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button className="btn btn-secondary mt-3" onClick={() => handleAction('balance')}>Check Balance</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {activeFeature === 'recharge' && (
+                    <div className="col-md-6 offset-md-3">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h5 className="card-title">Recharge Gift Card</h5>
+                                <div className="form-group">
+                                    <label htmlFor="rechargeCode">Gift Card Code:</label>
+                                    <input
+                                        id="rechargeCode"
+                                        name="code"
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Code"
+                                        value={formData.code}
+                                        onChange={handleInputChange}
+                                    />
+                                    <label htmlFor="rechargeAmount">Recharge Amount:</label>
+                                    <input
+                                        id="rechargeAmount"
+                                        name="rechargeAmount"
+                                        type="number"
+                                        className="form-control"
+                                        placeholder="Recharge Amount"
+                                        value={formData.rechargeAmount}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button className="btn btn-success mt-3" onClick={() => handleAction('recharge')}>Recharge Gift Card</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {activeFeature === 'activation' && (
+                    <div className="col-md-6 offset-md-3">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h5 className="card-title">Activate/Deactivate Gift Card</h5>
+                                <div className="form-group">
+                                    <label htmlFor="activationCode">Gift Card Code:</label>
+                                    <input
+                                        id="activationCode"
+                                        name="code"
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Code"
+                                        value={formData.code}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button className={`btn btn-${formData.isActive ? 'warning' : 'info'} mt-3`} onClick={() => handleAction('activation')}>
+                                        {formData.isActive ? 'Deactivate' : 'Activate'} Gift Card
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {showConfirmButton && (
-                <button className="confirm-button" onClick={handleConfirm}>Confirm</button>
+                <div className="modal fade show" tabIndex="-1">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirmation</h5>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={handleConfirm}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>{message}</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-info" onClick={handleConfirm}>Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
-
-            <p>{message}</p>
         </div>
     );
 };

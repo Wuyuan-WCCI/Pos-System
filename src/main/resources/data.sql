@@ -13,3 +13,4 @@ CREATE TABLE order_payment_methods (
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
+SELECT * FROM orders WHERE order_date >= '2023-06-25 00:00:00' AND order_date < '2023-06-26 00:00:00';

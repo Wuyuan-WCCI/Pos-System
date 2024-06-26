@@ -1,71 +1,30 @@
-.gift-card-management {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+/* GiftCardManagement.css */
+
+.card {
+    margin-bottom: 20px;
 }
 
-.gift-card-management h2 {
-    text-align: center;
-    margin-bottom: 20px;
+.card-body {
+    padding: 20px;
 }
 
 .form-group {
     margin-bottom: 15px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input {
-    width: calc(100% - 20px);
-    padding: 8px 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-bottom: 10px;
-}
-
-button{
-    display: block;
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 4px;
+.nav-pills .nav-item .nav-link {
+    padding: 10px 15px;
     cursor: pointer;
-    margin-bottom: 10px;
 }
 
-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+.btn-secondary {
+    margin-right: 10px;
 }
 
-button:hover:not(:disabled) {
-    background-color: #0056b3;
+.modal-dialog {
+    max-width: 500px;
 }
 
-.confirm-button {
-    width: auto;
-    padding: 5px 10px;
-    font-size: 14px;
-    background-color: #28a745;
-}
-
-.confirm-button:hover {
-    background-color: #218838;
-}
-
-p {
-    text-align: center;
-    font-size: 16px;
-    color: green;
+.modal-title {
+    font-weight: bold;
 }

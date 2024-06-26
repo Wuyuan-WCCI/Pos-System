@@ -1,0 +1,64 @@
+/* OrderForm.css */
+
+.customer-section {
+    background-color: #f0f0f0;
+    padding: 15px;
+}
+
+.customer-lookup, .customer-info, .existing-customer-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.customer-lookup button, .customer-info button {
+    margin-top: 10px;
+}
+
+.products-section {
+    background-color: #f0f0f0;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.product-card {
+    height: 100%; /* Ensure each card stretches to the same height */
+}
+
+.product-card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card .card-body:first-child {
+    flex: 1; /* Make the product details take up all available space vertically */
+}
+
+.product-card .card-body:last-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px; /* Adjust spacing */
+}
+
+.order-summary {
+    background-color: #f0f0f0;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.total-price {
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .product-card .card-body:last-child {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .product-card .card-body:last-child .input-group {
+        margin-top: 10px;
+    }
+}

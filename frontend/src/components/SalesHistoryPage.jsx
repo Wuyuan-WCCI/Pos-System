@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -12,22 +12,18 @@ const SalesHistoryPage = () => {
     const [pageSize, setPageSize] = useState(25); // Default page size
     const [currentPage, setCurrentPage] = useState(1); // Current page
 
-    useEffect(() => {
-        fetchSalesHistory();
-        fetchAllSalesHistory(); // Fetch all sales data for totals
-    }, [date, period, pageSize, currentPage]);
-
-    const fetchSalesHistory = async () => {
+    const fetchSalesHistory = useCallback(async () => {
         try {
             const formattedDate = format(date, 'yyyy-MM-dd');
             const response = await axios.get(`http://localhost:8080/api/sales-history/${period}?date=${formattedDate}&pageSize=${pageSize}&page=${currentPage}`);
+            console.log('API Response:', response.data); // Log the response
             setSalesHistory(response.data.content);
         } catch (error) {
             console.error('Error fetching sales history:', error);
         }
-    };
+    }, [date, period, pageSize, currentPage]);
 
-    const fetchAllSalesHistory = async () => {
+    const fetchAllSalesHistory = useCallback(async () => {
         try {
             const formattedDate = format(date, 'yyyy-MM-dd');
             let allData = [];
@@ -43,16 +39,24 @@ const SalesHistoryPage = () => {
         } catch (error) {
             console.error('Error fetching all sales history:', error);
         }
-    };
+    }, [date, period]);
+
+    useEffect(() => {
+        fetchSalesHistory();
+        fetchAllSalesHistory(); // Fetch all sales data for totals
+    }, [fetchSalesHistory, fetchAllSalesHistory]);
 
     const calculateTotalByPaymentMethod = (data) => {
         return data.reduce((acc, order) => {
-            const paymentMethods = order.paymentMethods || {};
-            for (const [method, amount] of Object.entries(paymentMethods)) {
-                if (!acc[method]) {
-                    acc[method] = 0;
+            // Exclude 'Pending' orders from the calculation
+            if (order.status !== 'Pending') {
+                const paymentMethods = order.paymentMethods || {};
+                for (const [method, amount] of Object.entries(paymentMethods)) {
+                    if (!acc[method]) {
+                        acc[method] = 0;
+                    }
+                    acc[method] += amount;
                 }
-                acc[method] += amount;
             }
             return acc;
         }, {});
@@ -60,10 +64,14 @@ const SalesHistoryPage = () => {
 
     const totalByPaymentMethod = calculateTotalByPaymentMethod(allSalesHistory);
 
-
-
     const handlePageChange = (page) => {
         setCurrentPage(page);
+    };
+
+    const handleDateChange = (e) => {
+        const selectedDate = parseISO(e.target.value);
+        setDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0)); // Set to start of day local time
+        setCurrentPage(1); // Reset to first page when date changes
     };
 
     return (
@@ -78,10 +86,7 @@ const SalesHistoryPage = () => {
                     <input
                         type="date"
                         value={format(date, 'yyyy-MM-dd')}
-                        onChange={(e) => {
-                            const selectedDate = parseISO(e.target.value);
-                            setDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0)); // Set to start of day local time
-                        }}
+                        onChange={handleDateChange}
                     />
                 </div>
                 <div className="filter-item">
@@ -93,34 +98,39 @@ const SalesHistoryPage = () => {
                         <option value="year">Year</option>
                     </select>
                 </div>
-               
                 <div className="filter-item">
                     <label>Show per page:</label>
                     <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
-                        <option value={25}>25</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
                         <option value={50}>50</option>
                         <option value={100}>100</option>
                     </select>
                 </div>
             </section>
 
-            <section className="sales-list">
+            {/* Order Summary */}
+            <section className="order-summary">
+                <h2>Order Summary</h2>
+                <div className="order-summary-header">
+                    <span>Order Id</span>
+                    <span>Order Date</span>
+                    <span>Order Status</span>
+                    <span>Order Total</span>
+                </div>
                 {salesHistory.map(order => (
                     <div className="sales-card" key={order.id}>
                         <Link to={`/orders/${order.id}/items`}>
-                            <div>{order.id} -- {new Date(order.orderDate).toLocaleString()} - {order.status} - ${(order.totalAmount ?? 0).toFixed(2)}</div>
+                            <div>{order.id}</div>
                         </Link>
-                        <ul className="payment-methods">
-                            {Object.entries(order.paymentMethods || {}).map(([method, amount], index) => (
-                                <li key={`${order.id}-${method}-${index}`}>
-                                    {method}: ${(amount ?? 0).toFixed(2)}
-                                </li>
-                            ))}
-                        </ul>
+                        <div>{new Date(order.orderDate).toLocaleString()}</div>
+                        <div>{order.status}</div>
+                        <div>${(order.totalAmount ?? 0).toFixed(2)}</div>
                     </div>
                 ))}
             </section>
 
+            {/* Totals */}
             <section className="totals">
                 <h2>Total Sales by Payment Method:</h2>
                 <ul>
@@ -130,7 +140,7 @@ const SalesHistoryPage = () => {
                         </li>
                     ))}
                 </ul>
-                <h2>Total Sales: ${(allSalesHistory.reduce((total, order) => total + (order.totalAmount ?? 0), 0)).toFixed(2)}</h2>
+                <h2>Total Sales: ${(allSalesHistory.reduce((total, order) => total + (order.status !== 'Pending' ? (order.totalAmount ?? 0) : 0), 0)).toFixed(2)}</h2>
             </section>
 
             {/* Pagination Controls */}

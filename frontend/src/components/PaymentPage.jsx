@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { OrderContext } from '../context/OrderContext';
-
+import './PaymentPage.css'; // Import custom styles
 
 const PaymentPage = () => {
     const { orderId } = useParams(); // Get the orderId from the URL params
@@ -24,7 +24,7 @@ const PaymentPage = () => {
     const orderItems = order?.orderItems || [];
     const totalPrice = order?.totalAmount || 0;
     const customerInfo = location?.state?.customerInfo || null ;
-    
+
     useEffect(() => {
         // Fetch order details when the component mounts
         const fetchOrderDetails = async () => {
@@ -119,6 +119,16 @@ const PaymentPage = () => {
                 status: 'Completed'
             });
 
+            // Update product quantities in stock
+            // Assuming each order item has a product.id and quantity, update the stock
+            for (const item of orderItems) {
+                const productId = item.product.id;
+                const newQuantityInStock = item.product.quantityInStock - item.quantity;
+                await axios.put(`http://localhost:8080/api/products/${productId}`, {
+                    quantityInStock: newQuantityInStock
+                });
+            }
+
             setOrderSummary(orderSummaryData);
             setShowPopup(true);
             setTimeout(() => {
@@ -148,21 +158,27 @@ const PaymentPage = () => {
     };
 
     return (
-        <div>
-            <h2>Payment</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="payment-container">
+            <h2 className="payment-title">Payment</h2>
+            {error && <p className="error-message">{error}</p>}
             {orderSummary && (
-                <div>
-                    <p>Order ID: {orderId}</p>
-                    <p>Total Amount: ${orderSummary.totalAmount}</p>
-                    <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
-                        <span key={method}>{method}: ${amount.toFixed(2)} </span>
-                    ))}</p>
-                    {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
+                <div className="payment-success">
+                    <p>Payment Successful!</p>
+                    <div>
+                        <p>Order ID: {orderId}</p>
+                        <p>Total Amount: ${orderSummary.totalAmount}</p>
+                        <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
+                            <span key={method}>{method}: ${amount.toFixed(2)} </span>
+                        ))}</p>
+                        {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
+                    </div>
                 </div>
             )}
-            <p>Total Price: ${totalPrice.toFixed(2)}</p>
-            <div>
+            <div className="total-price">
+                <h3>Total Price</h3>
+                <p>${totalPrice.toFixed(2)}</p>
+            </div>
+            <div className="order-summary">
                 <h3>Order Summary</h3>
                 <ul>
                     {orderItems.map(item => (
@@ -172,19 +188,7 @@ const PaymentPage = () => {
                     ))}
                 </ul>
             </div>
-            {customerInfo && (
-                <div>
-                <h3>Customer Information</h3>
-                <p>Name: {customerInfo.name}</p>
-                <p>Email: {customerInfo.email}</p>
-                <p>Phone: {customerInfo.phone}</p>
-                <p>Address: {customerInfo.address}</p>
-            </div>
-            )
-                
-            }
-           
-            <div>
+            <div className="payment-methods">
                 <h3>Choose Payment Method</h3>
                 <label>
                     <input
@@ -258,14 +262,13 @@ const PaymentPage = () => {
                     </div>
                 )}
                 {paymentMethod === 'Cash' && (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span>$</span>
+                    <div className="cash-received">
+                        <h3>Cash Received</h3>
                         <input
                             type="number"
                             placeholder="Cash Received"
                             value={cashReceived}
                             onChange={handleCashReceivedChange}
-                            style={{ marginLeft: '5px' }}
                         />
                         {change >= 0 && (
                             <p>Change: ${change.toFixed(2)}</p>
@@ -282,35 +285,27 @@ const PaymentPage = () => {
                     PayPal
                 </label>
             </div>
-            <button onClick={handlePayment} disabled={loading}>
-                {loading ? 'Processing...' : 'Complete Payment'}
-            </button>
+            <div className="complete-payment">
+                <button onClick={handlePayment} disabled={loading}>
+                    {loading ? 'Processing...' : 'Complete Payment'}
+                </button>
+            </div>
 
             {showPopup && (
-                <div style={{
-                    position: 'fixed',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    backgroundColor: 'white',
-                    padding: '20px',
-                    boxShadow: '0 0 10px rgba(0,0,0,0.5)',
-                    zIndex: 1000
-                }}>
+                <div className="payment-success">
                     <p>Payment Successful!</p>
-                    {orderSummary && (
-                        <div>
-                            <p>Order ID: {orderId}</p>
-                            <p>Total Amount: ${orderSummary.totalAmount}</p>
-                            <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
-                                <span key={method}>{method}: ${amount.toFixed(2)} </span>
-                            ))}</p>
-                            {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
-                        </div>
-                    )}
+                    <div>
+                        <p>Order ID: {orderId}</p>
+                        <p>Total Amount: ${orderSummary.totalAmount}</p>
+                        <p>Payment Methods: {Object.entries(orderSummary.paymentMethods).map(([method, amount]) => (
+                            <span key={method}>{method}: ${amount.toFixed(2)} </span>
+                        ))}</p>
+                        {paymentMethod === 'Cash' && <p>Change: ${change.toFixed(2)}</p>}
+                    </div>
                 </div>
             )}
         </div>
     );
 };
+
 export default PaymentPage;

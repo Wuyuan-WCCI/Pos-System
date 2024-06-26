@@ -1,0 +1,63 @@
+/* src/style.css */
+body, html {
+    height: 100%;
+    margin: 0;
+    
+}
+
+
+
+.background {
+    background-image: url('./assets/background.jpg'); /* Path to your background image */
+    background-size: cover; /* Cover the entire container */
+    background-position: center; /* Center the background image */
+    min-height: 100vh; /* Set minimum height to 100% of viewport height */
+    position: relative; /* Ensure relative positioning */
+    padding-bottom: 60px; /* Optional: Adjust padding as needed */
+}
+
+
+.container-content {
+    padding-top: 70px; /* Adjust to make room for header */
+    padding-bottom: 60px; /* Add padding to the bottom to prevent footer overlap */
+}
+
+.footer {
+    background-color: #060606;
+    color: white;
+    padding: 3px 0;
+    text-align: center;
+    position: fixed; /* Changed from absolute to fixed */
+    bottom: 0;
+    width: 100%;
+    z-index: 10;
+   
+}
+
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-links li {
+    margin: 0 15px;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}

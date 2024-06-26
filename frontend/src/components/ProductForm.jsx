@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { ProductContext } from '../context/ProductContext';
+import { TextField, Button, Typography, Box } from '@mui/material';
 
 const ProductForm = () => {
     const [name, setName] = useState('');
@@ -7,14 +8,25 @@ const ProductForm = () => {
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [quantityInStock, setQuantityInStock] = useState('');
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [feedbackMsg, setFeedbackMsg] = useState('');
     const { addProduct } = useContext(ProductContext);
 
+    const validate = () => {
+        const errors = {};
+        if (!name.trim()) errors.name = 'Product name is required';
+        if (!price.trim()) errors.price = 'Product price is required';
+        if (isNaN(price) || parseFloat(price) <= 0) errors.price = 'Product price must be a positive number';
+        if (!quantityInStock.trim()) errors.quantityInStock = 'Quantity in stock is required';
+        if (isNaN(quantityInStock) || parseInt(quantityInStock) < 0) errors.quantityInStock = 'Quantity in stock must be a non-negative integer';
+        return errors;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!name.trim() || !price.trim() || !quantityInStock.trim()) {
-            setError('Please enter product details.');
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
@@ -33,50 +45,76 @@ const ProductForm = () => {
             setDescription('');
             setPrice('');
             setQuantityInStock('');
+            setErrors({});
         } catch (error) {
             console.error('Error creating product:', error);
-            setError('Failed to create product. Please try again later.');
+            setFeedbackMsg('Failed to create product. Please try again later.');
         }
     };
 
     return (
-        <div>
-            <h2>Create Product</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {feedbackMsg && <p style={{ color: 'green' }}>{feedbackMsg}</p>}
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter product name"
-                />
-                <input
-                    type="text"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    placeholder="Enter product brand"
-                />
-                <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Enter product description"
-                />
-                <input
-                    type="text"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="Enter product price"
-                />
-                <input
-                    type="text"
-                    value={quantityInStock}
-                    onChange={(e) => setQuantityInStock(e.target.value)}
-                    placeholder="Enter quantity in stock"
-                />
-                <button type="submit">Create Product</button>
-            </form>
-        </div>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+            {feedbackMsg && <Typography color="primary">{feedbackMsg}</Typography>}
+            <TextField
+                fullWidth
+                margin="normal"
+                label="Product Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                variant="outlined"
+                error={!!errors.name}
+                helperText={errors.name}
+            />
+            <TextField
+                fullWidth
+                margin="normal"
+                label="Brand"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                variant="outlined"
+            />
+            <TextField
+                fullWidth
+                margin="normal"
+                label="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                multiline
+                rows={4}
+                variant="outlined"
+            />
+            <TextField
+                fullWidth
+                margin="normal"
+                label="Price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                type="number"
+                variant="outlined"
+                error={!!errors.price}
+                helperText={errors.price}
+            />
+            <TextField
+                fullWidth
+                margin="normal"
+                label="Quantity in Stock"
+                value={quantityInStock}
+                onChange={(e) => setQuantityInStock(e.target.value)}
+                type="number"
+                variant="outlined"
+                error={!!errors.quantityInStock}
+                helperText={errors.quantityInStock}
+            />
+            <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2 }}
+            >
+                Add Product
+            </Button>
+        </Box>
     );
 };
 
