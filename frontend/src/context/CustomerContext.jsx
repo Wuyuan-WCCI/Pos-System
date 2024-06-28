@@ -6,6 +6,16 @@ export const CustomerContext = createContext();
 
 export const CustomerProvider = ({ children }) => {
     const [customers, setCustomers] = useState([]);
+    const [customer, setCustomer] = useState(null);
+
+    const fetchCustomer = async (customerId) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/customers/${customerId}`);
+            setCustomer(response.data);
+        } catch (error) {
+            throw new Error('Error fetching customer details');
+        }
+    };
 
     const fetchCustomers = async () => {
         try {
@@ -26,13 +36,13 @@ export const CustomerProvider = ({ children }) => {
         }
     };
 
-    CustomerProvider.propTypes = {
-        children: PropTypes.node.isRequired // Validate children prop
-    };
-
     return (
-        <CustomerContext.Provider value={{ customers, fetchCustomers, addCustomer }}>
+        <CustomerContext.Provider value={{ customers, fetchCustomers, addCustomer, customer,fetchCustomer }}>
             {children}
         </CustomerContext.Provider>
     );
+};
+
+CustomerProvider.propTypes = {
+    children: PropTypes.node.isRequired // Validate children prop
 };

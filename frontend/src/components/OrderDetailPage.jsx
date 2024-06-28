@@ -1,17 +1,17 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { OrderContext } from '../context/OrderContext'; // Update the path accordingly
+import './OrderDetailPage.css'; // Import the CSS file for styling
 
 const OrderDetailPage = () => {
-    const { orderId } = useParams(); // Get the orderId from the URL
-    const { order, fetchOrder } = useContext(OrderContext); // Get the order and fetchOrder function from the context
+    const { orderId } = useParams();
+    const { order, fetchOrder } = useContext(OrderContext);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [redirect, setRedirect] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch order details when the component mounts
         fetchOrder(orderId)
             .then(() => setLoading(false))
             .catch((error) => {
@@ -21,60 +21,71 @@ const OrderDetailPage = () => {
             });
     }, [fetchOrder, orderId]);
 
-    // Redirect to PaymentPage when redirect state is true
     useEffect(() => {
         if (redirect) {
             navigate(`/payment/${orderId}`);
         }
     }, [redirect, navigate, orderId]);
 
-    // Handle checkout button click
     const handleCheckout = () => {
         setRedirect(true);
     };
 
-    // Render loading state while fetching order details
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="loading-container">
+                <div className="loader"></div>
+            </div>
+        );
     }
 
-    // Render error message if there was an error fetching order details
     if (error) {
-        return <div>Error: {error}</div>;
+        return <div className="error">Error: {error}</div>;
     }
 
-    // Render order details once fetched
     return (
-        <div>
+        <div className="order-detail-container">
             <h2>Order Details</h2>
             {order && (
-                <div>
-                    <p>Order ID: {order.id}</p>
-                    <p>Total Amount: ${order.totalAmount}</p>
-                    <p>Status: {order.status}</p>
-                    <p>Order Date: {new Date(order.orderDate).toLocaleString()}</p>
-                    <h3>Order Items:</h3>
-                    <ul>
-                        {order.orderItems.map((item) => (
-                            <li key={item.id}>
-                                <p>Product: {item.product.name}</p>
-                                <p>Quantity: {item.quantity}</p>
-                                <p>Price: ${item.product.price}</p>
-                                {/* Render other item details as needed */}
-                            </li>
-                        ))}
-                    </ul>
-                    <h3>Payment Method:</h3>
-                    <ul>
-                        {Object.entries(order.paymentMethods).map(([method, amount]) => (
-                            <li key={method}>
-                                <p>{method}: ${amount}</p>
-                            </li>
-                        ))}
-                    </ul>
-                    {/* Render other order details as needed */}
+                <div className="order-details">
+                    <div className="order-info card">
+                        <p><strong>Order ID:</strong> {order.id}</p>
+                        <p><strong>Customer:</strong> {order.customerName}</p>
+                        <p><strong>Total Amount:</strong> ${order.totalAmount}</p>
+                        <p><strong>Status:</strong> {order.status}</p>
+                        <p><strong>Order Date:</strong> {new Date(order.orderDate).toLocaleString()}</p>
+                    </div>
+                    <div className="order-items card">
+                        <h3>Order Items</h3>
+                        <div className="order-items-header">
+                            <span><strong>Product</strong></span>
+                            <span><strong>Unit Price</strong></span>
+                            <span><strong>Quantity</strong></span>
+                            <span><strong>Total Price</strong></span>
+                        </div>
+                        <ul>
+                            {order.orderItems.map((item) => (
+                                <li key={item.id} className="order-item">
+                                    <span>{item.product.name}</span>
+                                    <span>${item.product.price}</span>
+                                    <span>{item.quantity}</span>
+                                    <span>${(item.quantity * item.product.price).toFixed(2)}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="payment-methods card">
+                        <h3>Payment Methods</h3>
+                        <ul>
+                            {Object.entries(order.paymentMethods).map(([method, amount]) => (
+                                <li key={method}>
+                                    <p><strong>{method}:</strong> ${amount}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                     {order.status === 'Pending' && (
-                        <button onClick={handleCheckout}>CheckOut</button>
+                        <button className="checkout-button" onClick={handleCheckout}>CheckOut</button>
                     )}
                 </div>
             )}

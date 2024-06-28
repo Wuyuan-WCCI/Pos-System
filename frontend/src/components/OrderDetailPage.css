@@ -1,0 +1,143 @@
+/* OrderDetailPage.css */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+.order-detail-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #f6f8fa, #e9eff5);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+
+.order-info p, .order-items ul, .payment-methods ul {
+    margin: 10px 0;
+    color: #555;
+}
+
+.order-items ul, .payment-methods ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.order-items-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    padding: 10px 0;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.order-items-header span {
+    text-align: center;
+}
+
+.order-items-header span:first-child {
+    text-align: left;
+}
+
+.order-items-header span:last-child {
+    text-align: right;
+}
+
+.order-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    background-color: #fafafa;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+.order-item span {
+    text-align: center;
+}
+
+.order-item span:first-child {
+    text-align: left;
+}
+
+.order-item span:last-child {
+    text-align: right;
+}
+
+.payment-methods li {
+    background-color: #fafafa;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+.checkout-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+}
+
+.checkout-button:hover {
+    background-color: #0056b3;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.loader {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #007bff; /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error {
+    text-align: center;
+    font-size: 1.2em;
+    margin-top: 50px;
+    color: #777;
+}

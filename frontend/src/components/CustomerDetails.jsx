@@ -1,60 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { CustomerContext } from '../context/CustomerContext'; // Update the path accordingly
+import './CustomerDetails.css'; // Import the CSS file for styling
 
 const CustomerDetails = () => {
     const { customerId } = useParams();
-    const [customer, setCustomer] = useState(null);
-    const [error, setError] = useState('');
+    const { customer, fetchCustomer } = useContext(CustomerContext);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchCustomerDetails = async () => {
-            try {
-                // Fetch customer information including orders
-                const response = await axios.get(`http://localhost:8080/api/customers/${customerId}`);
-                setCustomer(response.data);
-            } catch (error) {
+        fetchCustomer(customerId)
+            .then(() => setLoading(false))
+            .catch((error) => {
                 setError('Error fetching customer details.');
                 console.error('Error fetching customer details:', error);
-            }
-        };
+                setLoading(false);
+            });
+    }, [fetchCustomer, customerId]);
 
-        fetchCustomerDetails();
-    }, [customerId]);
+    if (loading) {
+        return (
+            <div className="loading-container">
+                <div className="loader"></div>
+            </div>
+        );
+    }
 
-    if (!customer) {
-        return <div>Loading...</div>;
+    if (error) {
+        return <div className="error">Error: {error}</div>;
     }
 
     return (
-        <div>
+        <div className="customer-detail-container">
             <h2>Customer Details</h2>
-            <div>
-                <h3>Customer Information</h3>
-                <p>Name: {customer.name}</p>
-                <p>Email: {customer.email}</p>
-                <p>Phone: {customer.phone}</p>
-                <p>Address: {customer.address}</p>
-            </div>
-            <div>
-                <h3>Orders</h3>
-                {customer.orders.length > 0 ? (
-                    <ul>
-                        {customer.orders.map(order => (
-                            <li key={order.id}>
-                                <Link to={`/orders/${order.id}`}>
-                                    Order ID: {order.id}<br />
-                                    Total Amount: ${order.totalAmount}<br />
-                                    Status: {order.status}<br />
-                                    Order Date: {new Date(order.orderDate).toLocaleString()}<br />
-                                </Link><br />
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No orders found for this customer.</p>
-                )}
-            </div>
+            {customer && (
+                <div className="customer-details">
+                    <div className="customer-info card">
+                        <p><strong>Name:</strong> {customer.name}</p>
+                        <p><strong>Email:</strong> {customer.email}</p>
+                        <p><strong>Phone:</strong> {customer.phone}</p>
+                        <p><strong>Address:</strong> {customer.address}</p>
+                    </div>
+                    <div className="customer-orders card">
+                        <h3>Orders</h3>
+                        {customer.orders.length > 0 ? (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Order Id</th>
+                                        <th>Order Date</th>
+                                        <th>Total Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customer.orders.map((order) => (
+                                        <tr key={order.id}>
+                                            <td><Link to={`/orders/${order.id}`}>{order.id}</Link></td>
+                                            <td>{new Date(order.orderDate).toLocaleString()}</td>
+                                            <td>${order.totalAmount.toFixed(2)}</td>
+                                            <td>{order.status}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No orders found for this customer.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -23,6 +23,10 @@ public class Order {
     @JsonBackReference
     private Customer customer;
 
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
@@ -41,7 +45,8 @@ public class Order {
     public Order() {
     }
 
-    public Order(Long id, Customer customer, List<OrderItem> orderItems, LocalDateTime orderDate, String status,
+    public Order(Long id, Customer customer, String customerName, List<OrderItem> orderItems, LocalDateTime orderDate,
+            String status,
             double totalAmount, Map<String, BigDecimal> paymentMethods) {
         this.id = id;
         this.customer = customer;
@@ -50,6 +55,7 @@ public class Order {
         this.status = status;
         this.totalAmount = totalAmount;
         this.paymentMethods = paymentMethods;
+        this.customerName = customerName;
     }
 
     // Helper methods to manage the bi-directional relationship
@@ -67,6 +73,12 @@ public class Order {
 
     public Long getId() {
         return id;
+    }
+
+    private String customerName;
+
+    public String getCustomerName() {
+        return customerName;
     }
 
     public void setId(Long id) {
