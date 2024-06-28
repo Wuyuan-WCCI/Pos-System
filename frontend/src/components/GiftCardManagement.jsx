@@ -72,10 +72,10 @@ const GiftCardManagement = () => {
                 <h1 className="text-center">Gift Card Management</h1>
             </header>
             <nav className="nav nav-pills nav-fill mb-4">
-                <button className={`nav-item nav-link ${activeFeature === 'create' ? 'active' : ''}`} onClick={() => setActiveFeature('create')}>Create Gift Card</button>
-                <button className={`nav-item nav-link ${activeFeature === 'balance' ? 'active' : ''}`} onClick={() => setActiveFeature('balance')}>Check Balance</button>
-                <button className={`nav-item nav-link ${activeFeature === 'recharge' ? 'active' : ''}`} onClick={() => setActiveFeature('recharge')}>Recharge Card</button>
-                <button className={`nav-item nav-link ${activeFeature === 'activation' ? 'active' : ''}`} onClick={() => setActiveFeature('activation')}>Activate/Deactivate</button>
+                <button className={`nav-item nav-link ${activeFeature === 'create' ? 'active' : ''}`} onClick={() => setActiveFeature('create')}><h3>Create Gift </h3></button>
+                <button className={`nav-item nav-link ${activeFeature === 'balance' ? 'active' : ''}`} onClick={() => setActiveFeature('balance')}><h3>Check Balance</h3></button>
+                <button className={`nav-item nav-link ${activeFeature === 'recharge' ? 'active' : ''}`} onClick={() => setActiveFeature('recharge')}><h3>Recharge Card</h3></button>
+                <button className={`nav-item nav-link ${activeFeature === 'activation' ? 'active' : ''}`} onClick={() => setActiveFeature('activation')}><h3>Activate/Deactivate</h3></button>
             </nav>
             <div className="row">
                 {activeFeature === 'create' && (

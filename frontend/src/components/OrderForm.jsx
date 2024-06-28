@@ -11,6 +11,7 @@ const OrderForm = () => {
     const [isExistingCustomer, setIsExistingCustomer] = useState(false);
     const { products, fetchProducts } = useContext(ProductContext);
     const navigate = useNavigate();
+    const customerName = customerInfo.name;
 
     useEffect(() => {
         fetchProducts();
@@ -70,6 +71,7 @@ const OrderForm = () => {
     const handleCheckout = async () => {
         const order = {
             customer: customerInfo,
+            customerName: customerInfo.name,
             orderItems,
             totalAmount: totalPrice.toFixed(2),
             status: 'Pending',
