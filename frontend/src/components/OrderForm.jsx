@@ -11,7 +11,7 @@ const OrderForm = () => {
     const [isExistingCustomer, setIsExistingCustomer] = useState(false);
     const { products, fetchProducts } = useContext(ProductContext);
     const navigate = useNavigate();
-    const customerName = customerInfo.name;
+    
 
     useEffect(() => {
         fetchProducts();

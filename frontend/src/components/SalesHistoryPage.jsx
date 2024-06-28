@@ -114,6 +114,7 @@ const SalesHistoryPage = () => {
                 <h2>Order Summary</h2>
                 <div className="order-summary-header">
                     <span>Order Id</span>
+                    <span>Customer</span>
                     <span>Order Date</span>
                     <span>Order Status</span>
                     <span>Order Total</span>
@@ -123,6 +124,7 @@ const SalesHistoryPage = () => {
                         <Link to={`/orders/${order.id}/items`}>
                             <div>{order.id}</div>
                         </Link>
+                        <div>{order.customerName}</div>
                         <div>{new Date(order.orderDate).toLocaleString()}</div>
                         <div>{order.status}</div>
                         <div>${(order.totalAmount ?? 0).toFixed(2)}</div>

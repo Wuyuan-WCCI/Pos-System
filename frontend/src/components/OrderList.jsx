@@ -27,6 +27,7 @@ const OrderList = () => {
 
     return (
         <div className="container mt-5">
+        <p> <h2 >Orders</h2></p>
             <div className="card">
                 <h5 className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <span>Order List</span>
@@ -46,6 +47,7 @@ const OrderList = () => {
                         <thead>
                             <tr>
                                 <th>Order Id</th>
+                                <th>Customer</th>
                                 <th>Order Date</th>
                                 <th>Order Status</th>
                                 <th>Order Total</th>
@@ -55,6 +57,7 @@ const OrderList = () => {
                             {currentOrders.map(order => (
                                 <tr key={order.id}>
                                     <td><Link to={`/orders/${order.id}/items`}>{order.id}</Link></td>
+                                    <td>{order.customerName}</td>
                                     <td>{order.orderDate}</td>
                                     <td>{order.status}</td>
                                     <td>${order.totalAmount.toFixed(2)}</td>
