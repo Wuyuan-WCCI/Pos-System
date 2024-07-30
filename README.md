@@ -24,5 +24,7 @@ To run the Retail POS System locally, follow these steps:
 
 Frontend Setup:
 Navigate to frontend directory: cd frontend
-Install dependencies: npm install
+
+Install dependencies: npm install.
+
 Start development server: npm run dev
