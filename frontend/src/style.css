@@ -61,3 +61,36 @@ body, html {
 .footer-links a:hover {
     text-decoration: underline;
 }
+
+/* src/style.css */
+.receipt {
+    width: 300px;
+    margin: auto;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    
+}
+
+.receipt h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.receipt p {
+    margin: 0.5em 0;
+}
+
+.receipt hr {
+    border: 0;
+    border-top: 1px solid #000;
+}
+
+.receipt ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.receipt ul li {
+    margin: 0.5em 0;
+}
