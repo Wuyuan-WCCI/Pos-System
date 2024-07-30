@@ -1,7 +1,8 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { OrderContext } from '../context/OrderContext'; // Update the path accordingly
 import './OrderDetailPage.css'; // Import the CSS file for styling
+import PrintReceipt from './PrintReceipt';
 
 const OrderDetailPage = () => {
     const { orderId } = useParams();
@@ -10,6 +11,7 @@ const OrderDetailPage = () => {
     const [error, setError] = useState(null);
     const [redirect, setRedirect] = useState(false);
     const navigate = useNavigate();
+    const printRef = useRef();
 
     useEffect(() => {
         fetchOrder(orderId)
@@ -29,6 +31,12 @@ const OrderDetailPage = () => {
 
     const handleCheckout = () => {
         setRedirect(true);
+    };
+
+    const handlePrint = () => {
+        if (printRef.current) {
+            printRef.current.handlePrint();
+        }
     };
 
     if (loading) {
@@ -87,6 +95,11 @@ const OrderDetailPage = () => {
                     {order.status === 'Pending' && (
                         <button className="checkout-button" onClick={handleCheckout}>CheckOut</button>
                     )}
+
+                   <button className="print-button" onClick={handlePrint}>Print Receipt</button>
+                   <div style={{ display: 'none' }}>
+                        <PrintReceipt ref={printRef} order={order} customer={order.customerName} />
+                    </div> 
                 </div>
             )}
         </div>

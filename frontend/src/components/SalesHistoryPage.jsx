@@ -121,7 +121,7 @@ const SalesHistoryPage = () => {
                 </div>
                 {salesHistory.map(order => (
                     <div className="sales-card" key={order.id}>
-                        <Link to={`/orders/${order.id}/items`}>
+                        <Link to={`/orders/${order.id}`}>
                             <div>{order.id}</div>
                         </Link>
                         <div>{order.customerName}</div>

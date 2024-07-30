@@ -205,6 +205,7 @@ const OrderForm = () => {
                         <li key={item.product.id} className="list-group-item d-flex justify-content-between align-items-center">
                             {item.product.name}
                             <span className="badge bg-primary rounded-pill">{item.quantity}</span>
+                            <span className="badge bg-primary rounded-pill">{item.price}</span>
                         </li>
                     ))}
                 </ul>
