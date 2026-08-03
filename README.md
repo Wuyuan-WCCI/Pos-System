@@ -14,7 +14,8 @@ Reporting and Analytics: Generate sales reports, analyze trends, and gain insigh
 
 
 Technologies Used:
-Frontend: React.js, Bootstrap
+Frontend: Vite, React.js
+
 Backend: Spring Boot (Java), Hibernate
 Database: H2
 API Communication: Axios
